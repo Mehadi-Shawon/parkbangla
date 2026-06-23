@@ -366,25 +366,36 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {menu && (
-          <div className="md:hidden px-4 py-3 space-y-1"
-            style={{ background:'linear-gradient(135deg,rgba(15,12,41,0.95),rgba(30,27,75,0.92))', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:'1px solid rgba(255,255,255,0.08)' }}>
-            {navLinks.map(l => (
-              <NavLink key={l.to} to={l.to} end={l.exact} onClick={() => setMenu(false)}
-                className={({ isActive }) =>
-                  `block px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/8'}`}>
-                {l.label}
-              </NavLink>
-            ))}
+          <div className="md:hidden px-4 pt-3 pb-4"
+            style={{ background:'linear-gradient(135deg,rgba(15,12,41,0.97),rgba(30,27,75,0.95))', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:'1px solid rgba(255,255,255,0.08)' }}>
+
+            {/* Nav links */}
+            {navLinks.length > 0 && (
+              <div className="space-y-1 mb-3">
+                {navLinks.map(l => (
+                  <NavLink key={l.to} to={l.to} end={l.exact} onClick={() => setMenu(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                        isActive ? 'bg-white/15 text-white' : 'text-white/65 hover:text-white hover:bg-white/10'}`}>
+                    {l.to === '/'
+                      ? <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                      : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    }
+                    {l.label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+
             {!user ? (
-              <div className="pt-2 space-y-2" style={{ borderTop:'1px solid rgba(255,255,255,0.08)' }}>
+              <div className="grid grid-cols-2 gap-2 pt-3" style={{ borderTop:'1px solid rgba(255,255,255,0.08)' }}>
                 <Link to="/login" onClick={() => setMenu(false)}
-                  className="block w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white/70 hover:text-white hover:bg-white/10 transition-all">
+                  className="flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-white/80 border border-white/15 hover:bg-white/10 hover:text-white transition-all">
                   Sign in
                 </Link>
                 <Link to="/register" onClick={() => setMenu(false)}
-                  className="block w-full text-center px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
-                  style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+                  className="flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold text-white transition-all"
+                  style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 4px 12px rgba(99,102,241,0.4)' }}>
                   Get Started
                 </Link>
               </div>
