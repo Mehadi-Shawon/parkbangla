@@ -274,12 +274,12 @@ export default function Navbar() {
             </div>
 
             {/* Right: auth */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
               <NotificationBell user={user} />
               {user ? (
                 <div className="relative">
                   <button onClick={() => setUserDdp(v => !v)}
-                    className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl transition-all hover:bg-white/10">
+                    className="flex items-center gap-1.5 sm:gap-2.5 pl-1.5 sm:pl-2 pr-1.5 sm:pr-3 py-1.5 rounded-xl transition-all hover:bg-white/10">
                     <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                       style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
                       {getInitials(user.name)}
@@ -287,7 +287,7 @@ export default function Navbar() {
                     <span className="hidden sm:block text-sm font-medium max-w-[110px] truncate text-white/80">
                       {user.name}
                     </span>
-                    <svg className={`w-3.5 h-3.5 text-white/50 transition-transform ${userDdp ? 'rotate-180' : ''}`}
+                    <svg className={`hidden sm:block w-3.5 h-3.5 text-white/50 transition-transform ${userDdp ? 'rotate-180' : ''}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
                     </svg>
