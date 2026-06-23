@@ -195,7 +195,7 @@ export default function OwnerLayout({
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: '#f8fafc' }}>
+    <div className="min-h-screen pb-20 lg:pb-0" style={{ background: '#f8fafc' }}>
       <Navbar />
       <div>
 

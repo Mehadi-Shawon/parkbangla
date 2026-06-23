@@ -76,23 +76,28 @@ export default function DriverDashboard() {
           Find Parking
         </Link>
       }>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 
           {/* KPI cards */}
           {loading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {Array(4).fill(0).map((_,i) => <div key={i} className="h-28 bg-white rounded-2xl border border-gray-100 animate-pulse"/>)}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5 sm:mb-8">
+              {Array(4).fill(0).map((_,i) => <div key={i} className="h-16 lg:h-28 bg-white rounded-2xl border border-gray-100 animate-pulse"/>)}
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5 sm:mb-8">
               {kpis.map(k => (
-                <div key={k.label} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
+                <div key={k.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all
+                  flex items-center gap-3 p-3 lg:flex-col lg:items-start lg:p-5">
+                  {/* Icon */}
+                  <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center flex-shrink-0 lg:mb-2"
                     style={{ background:k.bg }}>
                     <span style={{ color:k.color }}><k.icon /></span>
                   </div>
-                  <p className="text-2xl font-extrabold text-gray-900">{k.value}</p>
-                  <p className="text-sm text-gray-400 mt-0.5">{k.label}</p>
+                  {/* Text */}
+                  <div className="min-w-0">
+                    <p className="text-lg lg:text-2xl font-extrabold text-gray-900 leading-none">{k.value}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 truncate">{k.label}</p>
+                  </div>
                 </div>
               ))}
             </div>
