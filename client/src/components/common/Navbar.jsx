@@ -274,10 +274,10 @@ export default function Navbar() {
             </div>
 
             {/* Right: auth */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <div className="flex items-center gap-2">
               <NotificationBell user={user} />
               {user ? (
-                <div className="relative">
+                <div className="relative hidden sm:block">
                   <button onClick={() => setUserDdp(v => !v)}
                     className="flex items-center gap-1.5 sm:gap-2.5 pl-1.5 sm:pl-2 pr-1.5 sm:pr-3 py-1.5 rounded-xl transition-all hover:bg-white/10">
                     <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
@@ -390,6 +390,17 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="pt-2 space-y-1" style={{ borderTop:'1px solid rgba(255,255,255,0.08)' }}>
+                {/* User info row */}
+                <div className="flex items-center gap-3 px-4 py-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                    style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+                    {getInitials(user?.name)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
+                    <p className="text-xs text-white/40 capitalize">{user?.role}</p>
+                  </div>
+                </div>
                 <Link to={dashboardLink} onClick={() => setMenu(false)} className="block px-4 py-2.5 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/8 transition-all">Dashboard</Link>
                 <Link to="/profile" onClick={() => setMenu(false)} className="block px-4 py-2.5 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/8 transition-all">Profile</Link>
                 <button onClick={handleLogout} className="block w-full text-left px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-all">Sign out</button>

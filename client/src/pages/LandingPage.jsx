@@ -81,12 +81,12 @@ export default function LandingPage() {
 
         {/* Glow blobs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full opacity-20"
-            style={{ background:'radial-gradient(circle,#6366f1,transparent 70%)', filter:'blur(100px)' }}/>
-          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full opacity-15"
-            style={{ background:'radial-gradient(circle,#3b82f6,transparent 70%)', filter:'blur(80px)' }}/>
-          <div className="absolute top-1/4 right-1/3 w-[300px] h-[300px] rounded-full opacity-10"
-            style={{ background:'radial-gradient(circle,#8b5cf6,transparent 70%)', filter:'blur(60px)' }}/>
+          <div className="absolute top-1/3 left-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] rounded-full opacity-20"
+            style={{ background:'radial-gradient(circle,#6366f1,transparent 70%)', filter:'blur(80px)' }}/>
+          <div className="absolute bottom-1/4 right-1/4 w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] rounded-full opacity-15"
+            style={{ background:'radial-gradient(circle,#3b82f6,transparent 70%)', filter:'blur(60px)' }}/>
+          <div className="absolute top-1/4 right-1/3 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] rounded-full opacity-10"
+            style={{ background:'radial-gradient(circle,#8b5cf6,transparent 70%)', filter:'blur(50px)' }}/>
           {/* Dot grid */}
           <div className="absolute inset-0 opacity-[0.035]"
             style={{ backgroundImage:'radial-gradient(circle,#ffffff 1px,transparent 1px)', backgroundSize:'32px 32px' }}/>
