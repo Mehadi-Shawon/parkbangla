@@ -76,7 +76,7 @@ export default function LandingPage() {
       <Navbar />
 
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="relative h-screen flex items-center pt-16 overflow-hidden"
+      <section className="relative min-h-screen flex items-center pt-16 overflow-hidden"
         style={{ background:'linear-gradient(135deg,#0f0c29 0%,#1e1b4b 45%,#302b63 75%,#1a1a2e 100%)' }}>
 
         {/* Glow blobs */}
@@ -92,7 +92,7 @@ export default function LandingPage() {
             style={{ backgroundImage:'radial-gradient(circle,#ffffff 1px,transparent 1px)', backgroundSize:'32px 32px' }}/>
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 w-full">
           <div className="max-w-3xl mx-auto text-center">
 
             {/* Pill */}
@@ -117,7 +117,7 @@ export default function LandingPage() {
 
             {/* Search bar */}
             <form onSubmit={handleSearch}
-              className="flex items-center gap-2 bg-white rounded-2xl p-2 shadow-2xl max-w-xl mx-auto mb-6"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white rounded-2xl p-2 shadow-2xl max-w-xl mx-auto mb-6"
               style={{ boxShadow:'0 20px 60px rgba(0,0,0,0.4)' }}>
               <div className="flex items-center gap-3 flex-1 px-3">
                 <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,7 +136,7 @@ export default function LandingPage() {
                 )}
               </div>
               <button type="submit"
-                className="px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
+                className="px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 flex-shrink-0 w-full sm:w-auto"
                 style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 4px 14px rgba(99,102,241,0.5)' }}>
                 Find Parking
               </button>
@@ -177,7 +177,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ───────────────────────────────────────── */}
-      <section className="py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-4">
@@ -208,7 +208,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────────────────── */}
-      <section className="py-24" style={{ background:'#f8fafc' }}>
+      <section className="py-16 sm:py-24" style={{ background:'#f8fafc' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-4">
@@ -241,7 +241,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOR DRIVERS & OWNERS ───────────────────────────── */}
-      <section className="py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Built for everyone</h2>
@@ -250,7 +250,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Drivers card */}
-            <div className="relative rounded-3xl overflow-hidden p-8"
+            <div className="relative rounded-3xl overflow-hidden p-6 sm:p-8"
               style={{ background:'linear-gradient(135deg,#1e1b4b 0%,#3730a3 60%,#4f46e5 100%)' }}>
               <div className="absolute -right-12 -top-12 w-56 h-56 rounded-full bg-white/5 pointer-events-none"/>
               <div className="absolute -left-8 -bottom-8 w-40 h-40 rounded-full bg-indigo-400/10 pointer-events-none"/>
@@ -289,7 +289,7 @@ export default function LandingPage() {
             </div>
 
             {/* Owners card */}
-            <div className="relative rounded-3xl overflow-hidden p-8 border border-gray-100 shadow-sm bg-white">
+            <div className="relative rounded-3xl overflow-hidden p-6 sm:p-8 border border-gray-100 shadow-sm bg-white">
               <div className="absolute -right-12 -top-12 w-56 h-56 rounded-full bg-indigo-50 pointer-events-none"/>
               <div className="relative">
                 <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-6">
@@ -329,7 +329,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── TESTIMONIALS ───────────────────────────────────── */}
-      <section className="py-24" style={{ background:'#f8fafc' }}>
+      <section className="py-16 sm:py-24" style={{ background:'#f8fafc' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-4">
@@ -365,7 +365,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ────────────────────────────────────────────── */}
-      <section className="py-24 relative overflow-hidden"
+      <section className="py-16 sm:py-24 relative overflow-hidden"
         style={{ background:'linear-gradient(135deg,#0f0c29 0%,#1e1b4b 45%,#4f46e5 100%)' }}>
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-15"
