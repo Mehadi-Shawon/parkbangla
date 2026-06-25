@@ -145,7 +145,7 @@ export default function ManagerReservations() {
 
   /* ── Guard: no parking ── */
   if (!loading && !parking) return (
-    <div className="min-h-screen" style={{ background: '#f8fafc' }}>
+    <div className="min-h-screen pb-20 lg:pb-0" style={{ background: '#f8fafc' }}>
       <Navbar />
       <div className="pt-16 flex items-center justify-center min-h-[80vh]">
         <div className="text-center max-w-sm px-4">

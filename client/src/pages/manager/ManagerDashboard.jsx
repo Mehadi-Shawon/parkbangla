@@ -6,7 +6,7 @@ import { PageLoader } from '../../components/common/LoadingSpinner';
 import { useAuth } from '../../context/AuthContext';
 import * as managerService from '../../services/managerService';
 import { supabase } from '../../lib/supabase';
-import { formatCurrency, formatDateTime } from '../../utils/helpers';
+import { formatCurrency, formatDateTime, timeAgo } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 /* ── SVG Icons ─────────────────────────────────────────── */
@@ -21,6 +21,93 @@ const I = {
   Clock:    () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={1.8}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 6v6l4 2"/></svg>,
   Phone:    () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>,
 };
+
+/* ── Live Activity Feed ─────────────────────────────────── */
+const EVENT_CONFIG = {
+  pending:   { label:'New booking',     color:'#f59e0b', bg:'#fffbeb',
+    icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2zm.75 5.75v4.69l3.28 1.97-.75 1.25-3.75-2.25A.75.75 0 0111 12.75V7.75h1.75z"/></svg> },
+  confirmed: { label:'Booking approved', color:'#2563eb', bg:'#eff6ff',
+    icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg> },
+  active:    { label:'Vehicle entered',  color:'#16a34a', bg:'#f0fdf4',
+    icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg> },
+  completed: { label:'Vehicle exited',   color:'#7c3aed', bg:'#f5f3ff',
+    icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg> },
+  cancelled: { label:'Booking cancelled',color:'#dc2626', bg:'#fef2f2',
+    icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg> },
+};
+
+function LiveActivityFeed({ parkingId }) {
+  const [events, setEvents] = useState([]);
+
+  const load = async () => {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const { data } = await supabase
+      .from('reservations')
+      .select('id, status, vehicle_number, updated_at, driver:users!reservations_user_id_fkey(name)')
+      .eq('parking_id', parkingId)
+      .gte('updated_at', today.toISOString())
+      .order('updated_at', { ascending: false })
+      .limit(6);
+    setEvents(data || []);
+  };
+
+  useEffect(() => {
+    if (!parkingId) return;
+    load();
+    const ch = supabase.channel(`feed-${parkingId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations', filter: `parking_id=eq.${parkingId}` }, load)
+      .subscribe();
+    return () => supabase.removeChannel(ch);
+  }, [parkingId]);
+
+  const cfg = (status) => EVENT_CONFIG[status] || EVENT_CONFIG.pending;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-full">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"/>
+          <p className="text-sm font-bold text-gray-800">Live Activity</p>
+        </div>
+        <p className="text-xs text-gray-400">Today</p>
+      </div>
+
+      {events.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 gap-2">
+          <svg className="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <p className="text-xs text-gray-400">No activity yet today</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-50">
+          {events.map((e, i) => {
+            const c = cfg(e.status);
+            return (
+              <div key={e.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                {/* Icon */}
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: c.bg, color: c.color }}>
+                  {c.icon}
+                </div>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-800">{c.label}</p>
+                  <p className="text-[11px] text-gray-400 truncate">
+                    <span className="font-mono font-semibold text-gray-600">{e.vehicle_number}</span>
+                    {e.driver?.name ? ` · ${e.driver.name}` : ''}
+                  </p>
+                </div>
+                {/* Time */}
+                <p className="text-[11px] text-gray-300 flex-shrink-0">{timeAgo(e.updated_at)}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ── Occupancy Ring ────────────────────────────────────── */
 function OccupancyRing({ available, total, size = 80 }) {
@@ -191,10 +278,10 @@ function ReservationCard({ r, onAction }) {
 
 /* ── Main Dashboard ────────────────────────────────────── */
 const TABS = [
-  { key:'pending',   label:'Pending Approval' },
-  { key:'confirmed', label:'Ready to Enter'   },
-  { key:'active',    label:'Active / Inside'  },
-  { key:'all',       label:'All Reservations' },
+  { key:'pending',   label:'Pending Approval', short:'Pending'   },
+  { key:'confirmed', label:'Ready to Enter',   short:'Ready'     },
+  { key:'active',    label:'Active / Inside',  short:'Active'    },
+  { key:'all',       label:'All Reservations', short:'All'       },
 ];
 
 export default function ManagerDashboard() {
@@ -398,7 +485,7 @@ export default function ManagerDashboard() {
                   {greeting()}, {user?.name?.split(' ')[0]}
                 </p>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-3xl font-extrabold text-white tracking-tight">{parking.name}</h1>
+                  <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{parking.name}</h1>
                   {/* Open / Closed badge */}
                   <span className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${
                     open
@@ -428,45 +515,46 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Stats strip + log button row */}
-            <div className="flex items-end justify-between gap-4 pb-5">
-            <div className="flex items-center gap-3 overflow-x-auto">
+            <div className="flex flex-col gap-3 pb-5">
+            <div className="grid grid-cols-5 gap-2">
               {[
                 { label:'Pending',    value: stats?.pending   ?? 0, color:'#f59e0b', pulse: (stats?.pending   ?? 0) > 0 },
                 { label:'Confirmed',  value: stats?.confirmed ?? 0, color:'#3b82f6', pulse: (stats?.confirmed ?? 0) > 0 },
                 { label:'Active',     value: stats?.active    ?? 0, color:'#22c55e', pulse: false },
                 { label:'Completed',  value: stats?.completed ?? 0, color:'#a78bfa', pulse: false },
-                { label:'Slots Free', value: slots,                 color: occupancyColor, pulse: false },
+                { label:'Free',       value: slots,                 color: occupancyColor, pulse: false },
               ].map(s => (
                 <div key={s.label}
-                  className="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2.5 rounded-2xl"
+                  className="flex flex-col items-center gap-0.5 px-1 py-2 rounded-2xl"
                   style={{
                     background: 'rgba(255,255,255,0.07)',
                     border: '1px solid rgba(255,255,255,0.12)',
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
-                    minWidth: '80px',
                   }}>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     {s.pulse && (
                       <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0"
                         style={{ background: s.color }}/>
                     )}
-                    <span className="text-xl font-extrabold" style={{ color: s.color }}>{s.value}</span>
+                    <span className="text-base sm:text-xl font-extrabold" style={{ color: s.color }}>{s.value}</span>
                   </div>
-                  <span className="text-[11px] text-white/45 font-medium whitespace-nowrap">{s.label}</span>
+                  <span className="text-[10px] text-white/45 font-medium whitespace-nowrap">{s.label}</span>
                 </div>
               ))}
             </div>
 
-              {/* Log button — bottom-right of hero */}
-              <Link to="/manager/reservations"
-                className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white/80 border border-white/20 hover:bg-white/10 transition-all whitespace-nowrap"
-                style={{ background:'rgba(255,255,255,0.08)', backdropFilter:'blur(8px)' }}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                View Reservation Log
-              </Link>
+              {/* Log button — full width on mobile, right-aligned on desktop */}
+              <div className="flex justify-end">
+                <Link to="/manager/reservations"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white/80 border border-white/20 hover:bg-white/10 transition-all"
+                  style={{ background:'rgba(255,255,255,0.08)', backdropFilter:'blur(8px)' }}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  </svg>
+                  View Reservation Log
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -474,50 +562,53 @@ export default function ManagerDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
 
           {/* Stats + Occupancy + Slot control */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            {/* Occupancy ring */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center justify-center gap-2">
-              <OccupancyRing available={slots} total={parking.total_slots} size={90}/>
-              <div className="text-center">
-                <p className="text-sm font-bold text-gray-900">{parking.total_slots - slots} / {parking.total_slots}</p>
-                <p className="text-xs text-gray-400">vehicles inside</p>
-              </div>
-            </div>
+            {/* Parking Status card */}
+            <div className="rounded-2xl overflow-hidden shadow-sm"
+              style={{ background:'linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#4338ca 100%)' }}>
+              <div className="p-5">
+                <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-4">Parking Status</p>
 
-            {/* Today stats */}
-            <div className="lg:col-span-2 grid grid-cols-2 gap-3">
-              <StatCard label="Pending Approval" value={stats?.pending  ?? 0} color="#f59e0b" icon={() => <I.Clock/>}/>
-              <StatCard label="Active Inside"     value={stats?.active   ?? 0} color="#22c55e" icon={() => <I.Car/>}/>
-              <StatCard label="Today Confirmed"   value={stats?.confirmed?? 0} color="#3b82f6" icon={() => <I.Check/>}/>
-              <StatCard label="Today Completed"   value={stats?.completed?? 0} color="#8b5cf6" icon={() => <I.Check/>}/>
-            </div>
-
-            {/* Slot quick control */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col justify-between">
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Available Slots</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <button onClick={() => setSlots(s => Math.max(0,s-1))} disabled={slots<=0}
-                    className="w-9 h-9 rounded-xl border border-gray-200 text-gray-600 text-lg font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-500 disabled:opacity-30 flex items-center justify-center transition-all">
-                    −
-                  </button>
-                  <input type="number" min="0" max={parking.total_slots} value={slots}
-                    onChange={e => setSlots(Math.max(0,Math.min(parking.total_slots,parseInt(e.target.value)||0)))}
-                    className="flex-1 text-center text-2xl font-extrabold text-gray-900 border border-gray-200 rounded-xl py-2 outline-none focus:border-indigo-400"/>
-                  <button onClick={() => setSlots(s => Math.min(parking.total_slots,s+1))} disabled={slots>=parking.total_slots}
-                    className="w-9 h-9 rounded-xl border border-gray-200 text-gray-600 text-lg font-bold hover:bg-green-50 hover:border-green-200 hover:text-green-600 disabled:opacity-30 flex items-center justify-center transition-all">
-                    +
-                  </button>
+                {/* Ring + slot counter */}
+                <div className="flex items-center gap-5 mb-4">
+                  <OccupancyRing available={slots} total={parking.total_slots} size={80}/>
+                  <div className="flex-1">
+                    <p className="text-white/50 text-xs mb-1">{parking.total_slots - slots} occupied · {slots} free</p>
+                    {/* Progress bar */}
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: parking.total_slots ? `${Math.round(((parking.total_slots - slots) / parking.total_slots) * 100)}%` : '0%',
+                          background: occupancyColor,
+                        }}/>
+                    </div>
+                    {/* +/- control */}
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setSlots(s => Math.max(0,s-1))} disabled={slots<=0}
+                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-red-500/30 text-white text-lg font-bold disabled:opacity-30 flex items-center justify-center transition-all border border-white/15">
+                        −
+                      </button>
+                      <input type="number" min="0" max={parking.total_slots} value={slots}
+                        onChange={e => setSlots(Math.max(0,Math.min(parking.total_slots,parseInt(e.target.value)||0)))}
+                        className="flex-1 text-center text-xl font-extrabold text-white bg-white/10 border border-white/20 rounded-xl py-1.5 outline-none focus:border-indigo-300"/>
+                      <button onClick={() => setSlots(s => Math.min(parking.total_slots,s+1))} disabled={slots>=parking.total_slots}
+                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-green-500/30 text-white text-lg font-bold disabled:opacity-30 flex items-center justify-center transition-all border border-white/15">
+                        +
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-400 text-center">of {parking.total_slots} total</p>
+
+                <button onClick={saveSlots} disabled={savingSlots || slots === parking.available_slots}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold text-indigo-900 bg-white hover:bg-indigo-50 transition-all disabled:opacity-40">
+                  {savingSlots ? 'Saving…' : 'Update Available Slots'}
+                </button>
               </div>
-              <button onClick={saveSlots} disabled={savingSlots || slots === parking.available_slots}
-                className="w-full py-2.5 rounded-xl text-sm font-bold text-white mt-3 transition-all disabled:opacity-40"
-                style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
-                {savingSlots ? 'Saving…' : 'Update Slots'}
-              </button>
             </div>
+
+            {/* Live Activity Feed */}
+            <LiveActivityFeed parkingId={parking?.id}/>
           </div>
 
           {/* Search + Tabs */}
@@ -549,26 +640,27 @@ export default function ManagerDashboard() {
               </form>
 
               {/* Tabs */}
-              <div className="flex gap-0 overflow-x-auto">
+              <div className="flex gap-1.5 p-1.5 bg-gray-50 mb-4 rounded-xl">
                 {TABS.map(t => (
                   <button key={t.key} onClick={() => setTab(t.key)}
-                    className={`px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex-shrink-0
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-semibold transition-all
                       ${tab===t.key
-                        ? 'border-indigo-600 text-indigo-700'
-                        : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
-                    {t.label}
+                        ? 'bg-white text-indigo-700 shadow-sm'
+                        : 'text-gray-400 hover:text-gray-600'}`}>
+                    <span className="sm:hidden">{t.short}</span>
+                    <span className="hidden sm:inline">{t.label}</span>
                     {t.key==='pending' && stats?.pending>0 && (
-                      <span className="ml-1.5 text-[10px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold bg-amber-500 text-white px-1 rounded-full leading-4">
                         {stats.pending}
                       </span>
                     )}
                     {t.key==='confirmed' && stats?.confirmed>0 && (
-                      <span className="ml-1.5 text-[10px] font-bold bg-blue-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">
+                      <span className="text-[10px] font-bold bg-blue-500 text-white px-1 rounded-full leading-4 animate-pulse">
                         {stats.confirmed}
                       </span>
                     )}
                     {t.key==='active' && stats?.active>0 && (
-                      <span className="ml-1.5 text-[10px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold bg-green-500 text-white px-1 rounded-full leading-4">
                         {stats.active}
                       </span>
                     )}
@@ -586,7 +678,9 @@ export default function ManagerDashboard() {
               ) : items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
                   <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
-                    <I.Car/>
+                    <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                    </svg>
                   </div>
                   <p className="text-sm text-gray-400">
                     {search ? `No results for "${search}"` : `No ${tab === 'all' ? '' : tab} reservations`}

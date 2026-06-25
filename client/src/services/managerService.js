@@ -11,27 +11,40 @@ export const getMyParking = async (userId) => {
   return data || null;
 };
 
-/* ── Get today's stats for a parking ────────────────────── */
+/* ── Get stats for a parking ─────────────────────────────
+   pending/confirmed/active = current state (all time)
+   completed/cancelled/revenue = today only
+──────────────────────────────────────────────────────── */
 export const getTodayStats = async (parkingId) => {
   const today    = new Date(); today.setHours(0,0,0,0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate()+1);
 
-  const { data } = await supabase
-    .from('reservations')
-    .select('status, total_amount')
-    .eq('parking_id', parkingId)
-    .gte('created_at', today.toISOString())
-    .lt('created_at', tomorrow.toISOString());
+  // Current actionable statuses — no date filter
+  const [{ data: current }, { data: todayData }] = await Promise.all([
+    supabase
+      .from('reservations')
+      .select('status')
+      .eq('parking_id', parkingId)
+      .in('status', ['pending', 'confirmed', 'active']),
+    supabase
+      .from('reservations')
+      .select('status, total_amount')
+      .eq('parking_id', parkingId)
+      .gte('updated_at', today.toISOString())
+      .lt('updated_at', tomorrow.toISOString()),
+  ]);
 
-  const all = data || [];
+  const cur  = current   || [];
+  const tod  = todayData || [];
+
   return {
-    total:     all.length,
-    pending:   all.filter(r => r.status === 'pending').length,
-    active:    all.filter(r => r.status === 'active').length,
-    confirmed: all.filter(r => r.status === 'confirmed').length,
-    completed: all.filter(r => r.status === 'completed').length,
-    cancelled: all.filter(r => r.status === 'cancelled').length,
-    revenue:   all.filter(r => ['active','completed'].includes(r.status))
+    total:     tod.length,
+    pending:   cur.filter(r => r.status === 'pending').length,
+    active:    cur.filter(r => r.status === 'active').length,
+    confirmed: cur.filter(r => r.status === 'confirmed').length,
+    completed: tod.filter(r => r.status === 'completed').length,
+    cancelled: tod.filter(r => r.status === 'cancelled').length,
+    revenue:   tod.filter(r => ['active','completed'].includes(r.status))
                   .reduce((s,r) => s + parseFloat(r.total_amount||0), 0),
   };
 };
