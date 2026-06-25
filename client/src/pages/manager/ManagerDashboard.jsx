@@ -427,7 +427,7 @@ export default function ManagerDashboard() {
   const open = isOpen();
 
   return (
-    <div className="min-h-screen pb-20" style={{ background:'#f8fafc' }}>
+    <div className="min-h-screen" style={{ background:'#f8fafc' }}>
       <Navbar/>
       <div>
 

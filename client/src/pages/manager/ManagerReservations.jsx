@@ -145,7 +145,7 @@ export default function ManagerReservations() {
 
   /* ── Guard: no parking ── */
   if (!loading && !parking) return (
-    <div className="min-h-screen pb-20 lg:pb-0" style={{ background: '#f8fafc' }}>
+    <div className="min-h-screen pb-8" style={{ background: '#f8fafc' }}>
       <Navbar />
       <div className="pt-16 flex items-center justify-center min-h-[80vh]">
         <div className="text-center max-w-sm px-4">
@@ -186,10 +186,10 @@ export default function ManagerReservations() {
             Manager Dashboard
           </Link>
 
-          <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
-            <div>
+          <div className="flex items-start justify-between gap-3 flex-wrap mb-5">
+            <div className="min-w-0">
               <p className="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Reservation Log</p>
-              <h1 className="text-3xl font-extrabold text-white">{parking?.name}</h1>
+              <h1 className="text-xl sm:text-3xl font-extrabold text-white truncate">{parking?.name}</h1>
               <p className="text-indigo-200/70 text-sm mt-1 flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -211,20 +211,19 @@ export default function ManagerReservations() {
 
           {/* Summary stat cards */}
           {summary && (
-            <div className="flex items-center gap-3 pb-6 overflow-x-auto">
+            <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 pb-5">
               {[
-                { label: 'Total',       value: summary.total,                color: '#a5b4fc' },
-                { label: 'Revenue',     value: formatCurrency(summary.revenue), color: '#34d399' },
-                { label: 'Completed',   value: summary.completed,            color: '#a78bfa' },
-                { label: 'Completion',  value: `${summary.rate}%`,           color: '#fbbf24' },
-                { label: 'Pending',     value: summary.pending,              color: '#f59e0b' },
-                { label: 'Active Now',  value: summary.active,               color: '#22c55e' },
+                { label: 'Total',      value: summary.total,                   color: '#a5b4fc' },
+                { label: 'Revenue',    value: formatCurrency(summary.revenue),  color: '#34d399' },
+                { label: 'Completed',  value: summary.completed,               color: '#a78bfa' },
+                { label: 'Completion', value: `${summary.rate}%`,              color: '#fbbf24' },
+                { label: 'Pending',    value: summary.pending,                 color: '#f59e0b' },
+                { label: 'Active',     value: summary.active,                  color: '#22c55e' },
               ].map(s => (
-                <div key={s.label} className="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2.5 rounded-2xl"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
-                           backdropFilter: 'blur(12px)', minWidth: '80px' }}>
-                  <span className="text-xl font-extrabold" style={{ color: s.color }}>{s.value}</span>
-                  <span className="text-[11px] text-white/45 font-medium whitespace-nowrap">{s.label}</span>
+                <div key={s.label} className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-2xl"
+                  style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.12)', backdropFilter:'blur(12px)' }}>
+                  <span className="text-base sm:text-xl font-extrabold" style={{ color: s.color }}>{s.value}</span>
+                  <span className="text-[10px] text-white/45 font-medium whitespace-nowrap">{s.label}</span>
                 </div>
               ))}
             </div>
@@ -239,10 +238,10 @@ export default function ManagerReservations() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
 
           {/* Status tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap gap-1.5">
             {STATUSES.map(s => (
               <button key={s} onClick={() => { setStatus(s); load(1, s, search, fromDate, toDate); }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all flex-shrink-0 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${
                   status === s
                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                     : 'text-gray-500 border-gray-200 hover:border-indigo-200 hover:text-indigo-600'}`}>
@@ -251,33 +250,33 @@ export default function ManagerReservations() {
             ))}
           </div>
 
-          {/* Search + date range */}
-          <div className="flex flex-wrap gap-2">
-            <div className="relative flex-1 min-w-[180px]">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input type="text" placeholder="Search driver, vehicle, ID…"
-                value={search} onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && load(1)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-50 transition-all"/>
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-                className="py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
-              <span className="text-gray-400 text-sm">→</span>
-              <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-                className="py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
-            </div>
+          {/* Row 1 — Search */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" placeholder="Search driver, vehicle, ID…"
+              value={search} onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && load(1)}
+              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-50 transition-all"/>
+          </div>
+
+          {/* Row 2 — Date range + actions */}
+          <div className="flex items-center gap-2">
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+              className="flex-1 min-w-0 py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
+            <span className="text-gray-400 text-sm flex-shrink-0">→</span>
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+              className="flex-1 min-w-0 py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
             <button onClick={() => load(1)}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
-              style={{ background: 'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+              className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+              style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
               Apply
             </button>
             {hasFilters && (
               <button onClick={clearFilters}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:border-gray-300 transition-all">
-                Clear
+                className="flex-shrink-0 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:border-gray-300 transition-all">
+                ✕
               </button>
             )}
           </div>
@@ -313,7 +312,47 @@ export default function ManagerReservations() {
               <p className="text-xs text-gray-400">Page {page} of {pages || 1}</p>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile cards — hidden on desktop */}
+            <div className="md:hidden divide-y divide-gray-50">
+              {rows.map(r => (
+                <div key={`m-${r.id}`} className="p-4 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg flex-shrink-0">
+                        #{String(r.id).padStart(4,'0')}
+                      </span>
+                      <StatusBadge status={r.status}/>
+                    </div>
+                    <p className="text-sm font-bold text-gray-900 flex-shrink-0">{formatCurrency(r.total_amount)}</p>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                      style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+                      {(r.driver?.name||'U').charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{r.driver?.name||'—'}</p>
+                      <p className="text-xs text-gray-400 truncate">{r.driver?.phone||r.driver?.email||''}</p>
+                    </div>
+                    <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg flex-shrink-0">{r.vehicle_number}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label:'Check-in',  value: formatDateTime(r.start_time) },
+                      { label:'Check-out', value: formatDateTime(r.end_time)   },
+                    ].map(d => (
+                      <div key={d.label} className="bg-gray-50 rounded-xl px-3 py-2">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wide">{d.label}</p>
+                        <p className="text-xs font-semibold text-gray-700">{d.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table — hidden on mobile */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100" style={{ background: '#fafbff' }}>

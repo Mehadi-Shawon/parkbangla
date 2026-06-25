@@ -240,7 +240,7 @@ export default function Navbar() {
   return (
     <>
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${navBg}`}
-        style={navStyle}>
+        style={{ ...navStyle, transform:'translateZ(0)', WebkitTransform:'translateZ(0)', willChange:'transform' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
 
@@ -349,9 +349,10 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* Mobile hamburger — only for guests; logged-in users use the bottom nav */}
+              {/* Mobile hamburger — guests + manager (driver/owner use bottom nav) */}
               <button onClick={() => setMenu(v => !v)}
-                className={`${user ? 'hidden' : 'md:hidden'} p-2 rounded-lg transition-colors hover:bg-white/10 ${burgerColor}`}>
+                className={`${user && user.role !== 'manager' ? 'hidden' : 'md:hidden'} w-8 h-8 flex items-center justify-center rounded-xl transition-all ${burgerColor}`}
+                style={{ background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.15)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {menu
                     ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
@@ -399,21 +400,61 @@ export default function Navbar() {
                 </Link>
               </div>
             ) : (
-              <div className="pt-2 space-y-1" style={{ borderTop:'1px solid rgba(255,255,255,0.08)' }}>
-                {/* User info row */}
-                <div className="flex items-center gap-3 px-4 py-2.5 mb-1">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                    style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
-                    {getInitials(user?.name)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
-                    <p className="text-xs text-white/40 capitalize">{user?.role}</p>
+              <div className="pt-3 space-y-2.5" style={{ borderTop:'1px solid rgba(255,255,255,0.08)' }}>
+
+                {/* Premium user card */}
+                <div className="rounded-2xl p-4 relative overflow-hidden"
+                  style={{ background:'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(37,99,235,0.2))', border:'1px solid rgba(255,255,255,0.12)' }}>
+                  <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20"
+                    style={{ background:'radial-gradient(circle,#818cf8,transparent)' }}/>
+                  <div className="flex items-center gap-3 relative">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-white text-sm font-extrabold"
+                        style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 4px 12px rgba(99,102,241,0.4)' }}>
+                        {getInitials(user?.name)}
+                      </div>
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-transparent"/>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[11px] font-semibold text-indigo-300 capitalize bg-indigo-500/20 px-2 py-0.5 rounded-full">{user?.role}</span>
+                        <span className="text-[11px] text-white/30">· Active</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <Link to={dashboardLink} onClick={() => setMenu(false)} className="block px-4 py-2.5 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/8 transition-all">Dashboard</Link>
-                <Link to="/profile" onClick={() => setMenu(false)} className="block px-4 py-2.5 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/8 transition-all">Profile</Link>
-                <button onClick={handleLogout} className="block w-full text-left px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-all">Sign out</button>
+
+                {/* Nav links */}
+                <div className="rounded-2xl overflow-hidden" style={{ border:'1px solid rgba(255,255,255,0.08)' }}>
+                  {[
+                    { to: dashboardLink, label:'Dashboard', icon:<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>, color:'#818cf8' },
+                    ...(user?.role === 'manager' ? [{ to:'/manager/reservations', label:'Reservation Log', icon:<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>, color:'#60a5fa' }] : []),
+                    { to:'/profile', label:'Profile', icon:<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>, color:'#a78bfa' },
+                  ].map((item, i, arr) => (
+                    <Link key={item.to} to={item.to} onClick={() => setMenu(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/8 transition-all"
+                      style={{ borderBottom: i < arr.length-1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background:`${item.color}20`, color: item.color }}>
+                        {item.icon}
+                      </div>
+                      <span className="flex-1 text-sm font-medium text-white/80">{item.label}</span>
+                      <svg className="w-4 h-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Sign out */}
+                <button onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all"
+                  style={{ background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.2)' }}>
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/20">
+                    <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                  </div>
+                  <span className="text-sm font-semibold text-red-400">Sign Out</span>
+                </button>
+
               </div>
             )}
           </div>
