@@ -163,7 +163,7 @@ export default function OwnerReservations() {
 
           {/* Summary stats */}
           {summary && (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+            <div className="hidden sm:grid grid-cols-5 gap-3 mb-6">
               {[
                 { label:'Total Bookings', value: summary.total,                   color:'text-indigo-600', bg:'bg-indigo-50 border-indigo-100' },
                 { label:'Total Revenue',  value: formatCurrency(summary.revenue),  color:'text-green-700', bg:'bg-green-50 border-green-100'   },
@@ -179,22 +179,22 @@ export default function OwnerReservations() {
             </div>
           )}
 
-          {/* Filter tabs */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {/* Filter tabs — segmented */}
+          <div className="flex border-b border-gray-200 mb-4">
             {STATUSES.map(s => (
               <button key={s} onClick={() => handleFilter(s)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap border transition-all flex-shrink-0
-                  ${filter===s
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                    : 'bg-white text-gray-500 border-gray-200 hover:border-indigo-200 hover:text-indigo-600'}`}>
-                {s ? s.charAt(0).toUpperCase()+s.slice(1) : 'All Reservations'}
+                className={`flex-1 py-2.5 text-xs font-semibold whitespace-nowrap transition-all text-center border-b-2 -mb-px ${
+                  filter===s
+                    ? 'text-indigo-600 border-indigo-600'
+                    : 'text-gray-400 border-transparent hover:text-gray-600'}`}>
+                {s ? s.charAt(0).toUpperCase()+s.slice(1) : 'All'}
               </button>
             ))}
           </div>
 
-          {/* Search + date range */}
-          <form onSubmit={handleSearch} className="mb-5 flex flex-wrap gap-2">
-            <div className="relative flex-1 min-w-[180px]">
+          {/* Search */}
+          <form onSubmit={handleSearch} className="mb-3 space-y-2">
+            <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
@@ -204,22 +204,17 @@ export default function OwnerReservations() {
             </div>
             <div className="flex items-center gap-2">
               <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-                className="py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
-              <span className="text-gray-400 text-sm">→</span>
+                className="flex-1 min-w-0 py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
+              <span className="text-gray-400 text-sm flex-shrink-0">→</span>
               <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-                className="py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
+                className="flex-1 min-w-0 py-2.5 px-3 text-sm rounded-xl border border-gray-200 outline-none focus:border-indigo-400 transition-all text-gray-600"/>
+              <button type="submit" className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+                style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>Search</button>
+              {(search || fromDate || toDate) && (
+                <button type="button" onClick={clearSearch}
+                  className="flex-shrink-0 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 bg-white transition-all">✕</button>
+              )}
             </div>
-            <button type="submit"
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
-              style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 4px 12px rgba(99,102,241,0.25)' }}>
-              Search
-            </button>
-            {(search || fromDate || toDate) && (
-              <button type="button" onClick={clearSearch}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:border-gray-300 bg-white transition-all">
-                Clear
-              </button>
-            )}
           </form>
 
           {/* Table */}
@@ -237,7 +232,77 @@ export default function OwnerReservations() {
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
+
+              {/* Mobile card list */}
+              <div className="md:hidden divide-y divide-gray-50">
+                {reservations.map(r => (
+                  <div key={`m-${r.id}`} className="p-4 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg flex-shrink-0">
+                          #{String(r.id).padStart(4,'0')}
+                        </span>
+                        <StatusBadge status={r.status}/>
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 flex-shrink-0">{formatCurrency(r.total_amount)}</p>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                        style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+                        {(r.driver?.name||'U').charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">{r.driver?.name||'—'}</p>
+                        <p className="text-xs text-gray-400 truncate">{r.parking?.name||'—'}</p>
+                      </div>
+                      <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg flex-shrink-0">{r.vehicle_number}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-gray-50 rounded-xl px-3 py-2">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wide">Check-in</p>
+                        <p className="text-xs font-semibold text-gray-700">{formatDateTime(r.start_time)}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl px-3 py-2">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wide">Check-out</p>
+                        <p className="text-xs font-semibold text-gray-700">{formatDateTime(r.end_time)}</p>
+                      </div>
+                    </div>
+                    {['pending','confirmed','active'].includes(r.status) && (
+                      <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                        {r.status==='pending' && <>
+                          <button onClick={()=>handleAction(r.id,'approve')} disabled={actioning===r.id}
+                            className="flex-1 py-2 text-xs font-bold text-white rounded-xl disabled:opacity-40"
+                            style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>
+                            {actioning===r.id?'…':'✓ Approve'}
+                          </button>
+                          <button onClick={()=>handleAction(r.id,'reject')} disabled={actioning===r.id}
+                            className="flex-1 py-2 text-xs font-bold text-white rounded-xl disabled:opacity-40"
+                            style={{ background:'linear-gradient(135deg,#ef4444,#dc2626)' }}>
+                            {actioning===r.id?'…':'✕ Reject'}
+                          </button>
+                        </>}
+                        {r.status==='confirmed' && (
+                          <button onClick={()=>handleAction(r.id,'entry')} disabled={actioning===r.id}
+                            className="flex-1 py-2 text-xs font-bold text-white rounded-xl disabled:opacity-40"
+                            style={{ background:'linear-gradient(135deg,#2563eb,#4f46e5)' }}>
+                            {actioning===r.id?'…':'→ Mark Entry'}
+                          </button>
+                        )}
+                        {r.status==='active' && (
+                          <button onClick={()=>handleAction(r.id,'exit')} disabled={actioning===r.id}
+                            className="flex-1 py-2 text-xs font-bold text-white rounded-xl disabled:opacity-40"
+                            style={{ background:'linear-gradient(135deg,#059669,#10b981)' }}>
+                            {actioning===r.id?'…':'↦ Mark Exit'}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full" style={{ minWidth:'860px' }}>
                   <thead>
                     <tr className="border-b border-gray-100" style={{ background:'#f8fafc' }}>

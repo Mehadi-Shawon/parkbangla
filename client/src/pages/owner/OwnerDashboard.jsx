@@ -23,18 +23,22 @@ const I = {
 /* ── KPI Card ─────────────────────────────────────────── */
 function KpiCard({ label, value, sub, icon: Icon, gradient, trend }) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl p-5 text-white ${gradient}`} style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
+    <div className={`relative overflow-hidden rounded-2xl text-white ${gradient}`}
+      style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
       <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white/10" />
       <div className="absolute -right-2 -bottom-6 w-20 h-20 rounded-full bg-white/5" />
-      <div className="relative">
-        <div className="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-3">
+      {/* Mobile: horizontal · Desktop: stacked */}
+      <div className="relative flex items-center gap-3 p-3 lg:flex-col lg:items-start lg:p-5">
+        <div className="bg-white/20 w-9 h-9 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center flex-shrink-0 lg:mb-2">
           <Icon />
         </div>
-        <p className="text-2xl font-extrabold leading-tight">{value}</p>
-        <p className="text-white/75 text-sm mt-0.5">{label}</p>
-        {sub && <p className="text-white/50 text-xs mt-1">{sub}</p>}
+        <div className="min-w-0">
+          <p className="text-lg lg:text-2xl font-extrabold leading-tight">{value}</p>
+          <p className="text-white/75 text-xs lg:text-sm mt-0.5 truncate">{label}</p>
+          {sub && <p className="text-white/50 text-xs mt-0.5 hidden lg:block">{sub}</p>}
+        </div>
         {trend && (
-          <span className="absolute top-0 right-0 bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="absolute top-2 right-2 bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
             {trend}
           </span>
         )}
@@ -63,24 +67,31 @@ function ParkingRow({ p, onUpdated }) {
   const barColor = pct===0 ? 'bg-red-400' : pct<30 ? 'bg-orange-400' : pct<60 ? 'bg-yellow-400' : 'bg-emerald-400';
 
   return (
-    <div className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/70 transition-colors">
-      <AvailRing available={slots} total={p.total_slots} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-gray-800 truncate">{p.name}</p>
-          <span className={`badge text-[10px] ${p.status==='approved' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
-            {p.status}
-          </span>
+    <div className="px-4 sm:px-6 py-3.5 hover:bg-gray-50/70 transition-colors">
+      {/* Top row: ring + info + chevron */}
+      <div className="flex items-center gap-3">
+        <AvailRing available={slots} total={p.total_slots} size={40}/>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+            <p className="text-sm font-semibold text-gray-800 truncate">{p.name}</p>
+            <span className={`badge text-[10px] flex-shrink-0 ${p.status==='approved' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
+              {p.status}
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 truncate mb-1.5">{p.address}</p>
+          <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+            <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width:`${pct}%` }}/>
+          </div>
         </div>
-        <p className="text-xs text-gray-400 truncate mb-1.5">{p.address}</p>
-        <div className="h-1 bg-gray-100 rounded-full overflow-hidden w-32">
-          <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width:`${pct}%` }}/>
-        </div>
+        <Link to={`/owner/parking/${p.id}/edit`}
+          className="flex-shrink-0 p-2 rounded-lg hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors">
+          <I.ChevR />
+        </Link>
       </div>
 
-      {/* Quick +/- toggle */}
+      {/* Bottom row: slot controls — mobile full width, desktop inline */}
       {p.status === 'approved' && (
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex items-center gap-2 mt-2.5 pl-[52px]">
           <button onClick={() => update(slots-1)} disabled={slots<=0||saving}
             className="w-7 h-7 rounded-lg border border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-500 font-bold text-base flex items-center justify-center transition-all disabled:opacity-30">
             −
@@ -90,14 +101,9 @@ function ParkingRow({ p, onUpdated }) {
             className="w-7 h-7 rounded-lg border border-gray-200 text-gray-500 hover:bg-green-50 hover:border-green-200 hover:text-green-600 font-bold text-base flex items-center justify-center transition-all disabled:opacity-30">
             +
           </button>
-          <span className="text-xs text-gray-400">/{p.total_slots}</span>
+          <span className="text-xs text-gray-400">of {p.total_slots} slots</span>
         </div>
       )}
-
-      <Link to={`/owner/parking/${p.id}/edit`}
-        className="flex-shrink-0 p-2 rounded-lg hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors">
-        <I.ChevR />
-      </Link>
     </div>
   );
 }
@@ -196,15 +202,15 @@ export default function OwnerDashboard() {
           <I.Plus /> Add Parking
         </Link>
       }>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 
           {/* ── KPI Cards ── */}
           {loading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {Array(4).fill(0).map((_,i) => <div key={i} className="h-32 rounded-2xl bg-gray-200 animate-pulse"/>)}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5 sm:mb-8">
+              {Array(4).fill(0).map((_,i) => <div key={i} className="h-16 lg:h-32 rounded-2xl bg-gray-200 animate-pulse"/>)}
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5 sm:mb-8">
               {kpis.map(k => <KpiCard key={k.label} {...k} />)}
             </div>
           )}

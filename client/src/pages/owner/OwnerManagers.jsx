@@ -221,7 +221,7 @@ export default function OwnerManagers() {
 
   return (
     <OwnerLayout title="Managers" subtitle="Assign dedicated managers to each parking location">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
 
         {/* ── Stats row ── */}
         {!loading && (
@@ -236,13 +236,13 @@ export default function OwnerManagers() {
               { label:'Coverage',         value: `${coverage}%`,   color: coverage === 100 ? 'text-green-600' : coverage >= 50 ? 'text-indigo-600' : 'text-amber-600', bg:'bg-white border-gray-100',
                 icon:<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg> },
             ].map(s => (
-              <div key={s.label} className={`rounded-2xl border shadow-sm p-4 flex items-center gap-3 ${s.bg}`}>
-                <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0" style={{ color: s.color.replace('text-','').includes('indigo') ? '#4f46e5' : s.color.includes('green') ? '#16a34a' : s.color.includes('amber') ? '#d97706' : '#9ca3af' }}>
+              <div key={s.label} className={`rounded-2xl border shadow-sm p-3 sm:p-4 flex items-center gap-2.5 ${s.bg}`}>
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0" style={{ color: s.color.replace('text-','').includes('indigo') ? '#4f46e5' : s.color.includes('green') ? '#16a34a' : s.color.includes('amber') ? '#d97706' : '#9ca3af' }}>
                   {s.icon}
                 </div>
-                <div>
-                  <p className={`text-2xl font-extrabold leading-none ${s.color}`}>{s.value}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+                <div className="min-w-0">
+                  <p className={`text-xl sm:text-2xl font-extrabold leading-none ${s.color}`}>{s.value}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">{s.label}</p>
                 </div>
               </div>
             ))}
@@ -264,29 +264,27 @@ export default function OwnerManagers() {
         )}
 
         {/* ── Table card ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="md:bg-white md:rounded-2xl md:border md:border-gray-100 md:shadow-sm overflow-hidden">
 
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-gray-100">
+          <div className="px-4 sm:px-5 py-3.5 border-b border-gray-100 space-y-2.5">
             {/* Filter pills */}
-            <div className="flex gap-1.5">
+            <div className="flex gap-1 p-1 bg-gray-100 rounded-full">
               {[
-                { key:'all',       label:`All (${parkings.length})` },
-                { key:'assigned',  label:`Assigned (${assigned.length})` },
-                { key:'unassigned',label:`Unassigned (${unassigned.length})` },
+                { key:'all',        label:`All (${parkings.length})` },
+                { key:'assigned',   label:`Assigned (${assigned.length})` },
+                { key:'unassigned', label:`Unassigned (${unassigned.length})` },
               ].map(f => (
                 <button key={f.key} onClick={() => setFilter(f.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
-                    filter === f.key
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                      : 'text-gray-500 border-gray-200 hover:border-indigo-200 hover:text-indigo-600'}`}>
+                  className={`flex-1 py-1.5 rounded-full text-xs font-semibold transition-all text-center ${
+                    filter === f.key ? 'text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  style={filter === f.key ? { background:'linear-gradient(135deg,#6366f1,#2563eb)' } : {}}>
                   {f.label}
                 </button>
               ))}
             </div>
-
             {/* Search */}
-            <div className="relative flex-1 min-w-[180px] max-w-xs ml-auto">
+            <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
@@ -319,7 +317,88 @@ export default function OwnerManagers() {
               <p className="text-sm text-gray-400">{search ? `No results for "${search}"` : 'No locations found.'}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden p-3 space-y-3">
+              {visible.map(p => {
+                const m = p.manager;
+                return (
+                  <div key={`m-${p.id}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+                    {/* Row 1: location + status */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: m ? 'linear-gradient(135deg,#eef2ff,#e0e7ff)' : '#fefce8' }}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            style={{ color: m ? '#4f46e5' : '#d97706' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5"/>
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{p.address}</p>
+                        </div>
+                      </div>
+                      <span className={`flex-shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                        p.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {p.status}
+                      </span>
+                    </div>
+                    {/* Row 2: manager info */}
+                    {m ? (
+                      <div className="flex items-center gap-2.5 bg-gray-50 rounded-xl px-3 py-2.5">
+                        <div className="relative flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                            style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+                            {m.name.charAt(0)}
+                          </div>
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"/>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-800 truncate">{m.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{m.email}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0"/>
+                        <p className="text-xs font-semibold text-amber-700">No manager assigned</p>
+                      </div>
+                    )}
+                    {/* Row 3: slots + rate + actions */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span><span className="font-bold text-gray-800">{p.available_slots}</span>/{p.total_slots} slots</span>
+                        <span>${parseFloat(p.hourly_rate).toFixed(2)}/hr</span>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {m ? (
+                          <>
+                            <button onClick={() => setModal(p)}
+                              className="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1.5 rounded-lg">
+                              Replace
+                            </button>
+                            <button onClick={() => removeManager(p)}
+                              className="text-xs font-semibold text-red-500 bg-red-50 border border-red-200 px-2.5 py-1.5 rounded-lg">
+                              Remove
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={() => setModal(p)}
+                            className="text-xs font-bold text-white px-3 py-1.5 rounded-lg"
+                            style={{ background:'linear-gradient(135deg,#f59e0b,#f97316)' }}>
+                            Assign
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr style={{ background:'#fafbff' }}>
@@ -407,7 +486,7 @@ export default function OwnerManagers() {
                         {/* Action */}
                         <td className="px-5 py-4">
                           {m ? (
-                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-1.5">
                               <button onClick={() => setModal(p)}
                                 className="flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -434,6 +513,7 @@ export default function OwnerManagers() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           {/* Footer count */}

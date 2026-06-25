@@ -42,7 +42,7 @@ const TABS = [
 function StatPill({ icon, value, label, loading }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-white/50">{icon}</span>
+      <span className="text-white/70">{icon}</span>
       <span className="text-sm font-bold text-white">
         {loading ? <span className="inline-block w-8 h-3 bg-white/20 rounded animate-pulse" /> : value}
       </span>
@@ -173,22 +173,22 @@ export default function OwnerLayout({
 
   const statItems = [
     {
-      icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5"/></svg>,
+      icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16h14zm-7-3a1 1 0 110-2 1 1 0 010 2zm3-5H9v-2h6v2zm0-4H9V7h6v2z"/></svg>,
       value: stats?.locations ?? '—',
       label: 'locations',
     },
     {
-      icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>,
+      icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>,
       value: stats?.freeSlots ?? '—',
       label: 'slots free',
     },
     {
-      icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>,
+      icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>,
       value: stats?.active ?? '—',
       label: 'active now',
     },
     {
-      icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1"/></svg>,
+      icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>,
       value: stats ? formatCurrency(stats.todayRevenue) : '—',
       label: "today's revenue",
     },
@@ -263,20 +263,20 @@ export default function OwnerLayout({
 
             {/* Tab navigation */}
             {showTabs && (
-              <div className="flex items-center gap-1 -mb-px">
+              <div className="flex items-center -mb-px">
                 {TABS.map(tab => (
                   <NavLink key={tab.to} to={tab.to} end={tab.exact}
                     className={({ isActive }) =>
-                      `relative flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all duration-150 flex-shrink-0
+                      `relative flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-2 sm:px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all duration-150
                        ${isActive
                          ? 'text-white border-white bg-white/8'
                          : 'text-white/50 border-transparent hover:text-white/80 hover:bg-white/5'}`
                     }>
                     {tab.icon}
-                    {tab.label}
+                    <span className="hidden sm:inline">{tab.label}</span>
                     {/* Pending badge on Reservations tab */}
                     {tab.to === '/owner/reservations' && pendingCount > 0 && (
-                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 ml-0.5"
+                      <span className="min-w-[16px] h-[16px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1"
                         style={{ background:'#ef4444' }}>
                         {pendingCount > 9 ? '9+' : pendingCount}
                       </span>
