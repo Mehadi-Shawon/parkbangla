@@ -57,14 +57,19 @@ export default function AdminParkings() {
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <AdminPageHeader
           icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5"/></svg>}
           label="Management" title="Parking Locations"
-          subtitle={`${total} total locations`}
+          subtitle="Approve and manage all parking properties"
           color="#6366f1"
+          stats={[
+            { value: total, label: 'Total' },
+            { value: parkings.filter(p => p.status === 'approved').length, label: 'Approved' },
+            { value: parkings.filter(p => p.status === 'pending').length,  label: 'Pending'  },
+          ]}
           right={
-            <button onClick={exportCSV} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-gray-200 bg-white text-gray-600 hover:border-indigo-200 hover:text-indigo-600 transition-all">
+            <button onClick={exportCSV} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90" style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               Export CSV
             </button>

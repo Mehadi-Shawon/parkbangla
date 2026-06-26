@@ -54,14 +54,17 @@ export default function ManageUsers() {
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <AdminPageHeader
           icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>}
           label="Management" title="Users"
-          subtitle={`${total} total accounts`}
+          subtitle="Manage all registered accounts"
           color="#3b82f6"
+          stats={[
+            { value: total, label: 'Total Users' },
+          ]}
           right={
-            <button onClick={exportCSV} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-gray-200 bg-white text-gray-600 hover:border-indigo-200 hover:text-indigo-600 transition-all">
+            <button onClick={exportCSV} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90" style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               Export CSV
             </button>
@@ -85,41 +88,64 @@ export default function ManageUsers() {
         </div>
 
         <div className="admin-card rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          {/* Mobile cards */}
+          {!loading && users.length > 0 && (
+            <div className="md:hidden divide-y divide-gray-50">
+              {users.map(u => (
+                <div key={u.id} onClick={() => setDrawer(u)} className="p-4 flex items-center gap-3 cursor-pointer hover:bg-indigo-50/30 transition-colors">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>{u.name.charAt(0)}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{u.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`capitalize text-[10px] font-semibold px-2 py-0.5 rounded-full border ${roleBadge(u.role)}`}>{u.role}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${u.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>{u.is_active ? "Active" : "Inactive"}</span>
+                    </div>
+                  </div>
+                  {u.role !== "admin" && (
+                    <button onClick={e=>{e.stopPropagation();handleToggle(u.id,u.is_active,u.name);}} disabled={toggling===u.id}
+                      className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all disabled:opacity-40 ${u.is_active ? "bg-red-50 border-red-200 text-red-600" : "bg-emerald-50 border-emerald-200 text-emerald-600"}`}>
+                      {toggling===u.id ? "..." : u.is_active ? "Deactivate" : "Activate"}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full" style={{ minWidth:'640px' }}>
               <thead>
                 <tr className="border-b border-gray-100">
                   {["User","Email","Role","Joined","Status","Action"].map(h => (
-                    <th key={h} className="px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest" style={{ color:"#6366f1", background:"linear-gradient(to right,#eef2ff,#f5f3ff)" }}>{h}</th>
+                    <th key={h} className="px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-indigo-200 whitespace-nowrap" style={{ background:'linear-gradient(135deg,#1e1b4b,#312e81)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {loading ? Array(6).fill(0).map((_,i) => (
-                  <tr key={i}><td colSpan={6} className="px-5 py-3"><div className="h-8 rounded-lg animate-pulse bg-gray-50"/></td></tr>
+                  <tr key={i}><td colSpan={6} className="px-4 py-3"><div className="h-8 rounded-lg animate-pulse bg-gray-50"/></td></tr>
                 )) : users.length === 0 ? (
                   <tr><td colSpan={6} className="text-center py-14 text-gray-400 text-sm">No users found.</td></tr>
                 ) : users.map(u => (
                   <tr key={u.id} onClick={() => setDrawer(u)}
-                    className="border-b border-gray-50 last:border-0 transition-colors cursor-pointer hover:bg-indigo-50/30">
-                    <td className="px-5 py-3.5">
+                    className="border-b border-gray-50 last:border-0 transition-colors cursor-pointer hover:bg-indigo-50/30 relative"
+                    style={{ borderLeft: `3px solid ${u.role==='admin'?'#f59e0b':u.role==='owner'?'#6366f1':u.role==='manager'?'#8b5cf6':'#22c55e'}` }}>
+                    <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>{u.name.charAt(0)}</div>
-                        <span className="text-sm font-medium text-gray-800">{u.name}</span>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>{u.name.charAt(0)}</div>
+                        <span className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{u.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-gray-500">{u.email}</td>
-                    <td className="px-5 py-3.5"><span className={`capitalize text-xs font-semibold px-2.5 py-0.5 rounded-full border ${roleBadge(u.role)}`}>{u.role}</span></td>
-                    <td className="px-5 py-3.5 text-xs text-gray-400">{formatDate(u.created_at)}</td>
-                    <td className="px-5 py-3.5">
-                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${u.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>
-                        {u.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5" onClick={e=>e.stopPropagation()}>
+                    <td className="px-4 py-3.5 text-sm text-gray-500 truncate max-w-[160px]">{u.email}</td>
+                    <td className="px-4 py-3.5"><span className={`capitalize text-xs font-semibold px-2.5 py-0.5 rounded-full border ${roleBadge(u.role)}`}>{u.role}</span></td>
+                    <td className="px-4 py-3.5 text-xs text-gray-400">{formatDate(u.created_at)}</td>
+                    <td className="px-4 py-3.5"><span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${u.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>{u.is_active ? "Active" : "Inactive"}</span></td>
+                    <td className="px-4 py-3.5" onClick={e=>e.stopPropagation()}>
                       {u.role !== "admin" && (
                         <button onClick={() => handleToggle(u.id, u.is_active, u.name)} disabled={toggling===u.id}
-                          className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all disabled:opacity-40 ${u.is_active ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100" : "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100"}`}>
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all disabled:opacity-40 hover:opacity-90"
+                          style={{ background: u.is_active ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#22c55e,#16a34a)' }}>
                           {toggling===u.id ? "..." : u.is_active ? "Deactivate" : "Activate"}
                         </button>
                       )}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import * as adminService from '../../services/adminService';
 import { formatCurrency, formatDateTime } from '../../utils/helpers';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -17,26 +18,28 @@ const I = {
   TrendUp: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>,
 };
 
-/* ???????? KPI Card ???? works in light + dark ???????????????????????????????????????????????????????????????????????????????????? */
+/* ── KPI Card — colored gradient ─────────────────────────── */
 function KpiCard({ label, value, sub, icon: Icon, accent, trend }) {
   return (
-    <div className="glass glass-hover rounded-2xl p-5 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.06]"
-        style={{ background: `radial-gradient(circle at top right, ${accent}, transparent 65%)` }} />
-      <div className="relative">
+    <div className="relative overflow-hidden rounded-2xl text-white"
+      style={{ background:`linear-gradient(135deg,${accent}dd,${accent}99)`, boxShadow:`0 8px 24px ${accent}40` }}>
+      {/* Decorative circles */}
+      <div className="absolute -top-5 -right-5 w-24 h-24 rounded-full bg-white/10 pointer-events-none"/>
+      <div className="absolute -bottom-6 -right-2 w-20 h-20 rounded-full bg-white/5 pointer-events-none"/>
+      <div className="relative p-5">
         <div className="flex items-start justify-between mb-4">
-          <div className="p-2.5 rounded-xl" style={{ background: `${accent}18`, border: `1px solid ${accent}25` }}>
-            <span style={{ color: accent }}><Icon /></span>
+          <div className="p-2.5 rounded-xl bg-white/20">
+            <span className="text-white"><Icon /></span>
           </div>
           {trend && (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1 text-[11px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">
               <I.TrendUp />{trend}
             </span>
           )}
         </div>
-        <p className="text-2xl font-extrabold text-gray-900 mb-0.5">{value}</p>
-        <p className="text-sm text-gray-500">{label}</p>
-        {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+        <p className="text-3xl font-extrabold mb-0.5 text-white">{value}</p>
+        <p className="text-sm text-white/75">{label}</p>
+        {sub && <p className="text-xs text-white/50 mt-1">{sub}</p>}
       </div>
     </div>
   );
@@ -88,32 +91,28 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-8 flex-wrap gap-4 admin-page-header">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 4px 12px rgba(99,102,241,0.35)' }}>
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-              </svg>
-            </div>
-            <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.15em] mb-0.5" style={{ color:'#6366f1' }}>Overview</p>
-              <h1 className="text-2xl font-extrabold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-400 mt-0.5">
-                {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
-              </p>
-            </div>
-          </div>
-          <button onClick={refresh} disabled={spinning}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-indigo-600 disabled:opacity-50 transition-all"
-            style={{ background:'rgba(255,255,255,0.8)', border:'1px solid rgba(99,102,241,0.2)', boxShadow:'0 1px 4px rgba(99,102,241,0.08)' }}>
-            <span className={spinning ? 'animate-spin' : ''}><I.Refresh /></span>
-            Refresh
-          </button>
-        </div>
+        <AdminPageHeader
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>}
+          label="Overview" title="Dashboard"
+          subtitle={new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
+          color="#6366f1"
+          stats={stats ? [
+            { value: stats.users?.total ?? 0,        label: 'Users'       },
+            { value: stats.parkings?.total ?? 0,      label: 'Locations'   },
+            { value: stats.reservations?.total ?? 0,  label: 'Bookings'    },
+            { value: stats.parkings?.pending ?? 0,    label: 'Pending'     },
+          ] : []}
+          right={
+            <button onClick={refresh} disabled={spinning}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-indigo-600 disabled:opacity-50 transition-all"
+              style={{ background:'rgba(255,255,255,0.8)', border:'1px solid rgba(99,102,241,0.2)' }}>
+              <span className={spinning ? 'animate-spin' : ''}><I.Refresh /></span>
+              Refresh
+            </button>
+          }
+        />
 
         {/* Pending banner */}
         {stats?.parkings?.pending > 0 && (
@@ -138,7 +137,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Charts */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mb-5">
 
           {/* Area chart */}
           <div className="xl:col-span-2 glass rounded-2xl p-6">

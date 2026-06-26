@@ -80,7 +80,7 @@ export default function AdminMap() {
 
   return (
     <AdminLayout>
-      <div className="p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <AdminPageHeader
           icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>}
           label="Admin" title="Parking Map"
@@ -102,14 +102,17 @@ export default function AdminMap() {
         </div>
 
         {/* Map */}
-        <div className="admin-card rounded-2xl overflow-hidden" style={{ height: 540 }}>
+        <div className="admin-card rounded-2xl overflow-hidden"
+          style={{ height: 'clamp(280px, 55vh, 540px)', position:'relative', isolation:'isolate' }}>
           {loading ? (
             <div className="h-full flex items-center justify-center bg-gray-50">
               <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"/>
             </div>
           ) : (
-            <div className="relative h-full">
-              <MapContainer center={center} zoom={12} style={{ width:'100%', height:'100%' }} scrollWheelZoom>
+            <div style={{ position:'relative', width:'100%', height:'100%', overflow:'hidden', borderRadius:'1rem' }}>
+              <MapContainer center={center} zoom={12}
+                style={{ width:'100%', height:'100%', position:'absolute', top:0, left:0 }}
+                scrollWheelZoom>
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; OpenStreetMap contributors'

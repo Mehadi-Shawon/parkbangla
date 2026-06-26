@@ -281,6 +281,7 @@ const TABS = [
   { key:'pending',   label:'Pending Approval', short:'Pending'   },
   { key:'confirmed', label:'Ready to Enter',   short:'Ready'     },
   { key:'active',    label:'Active / Inside',  short:'Active'    },
+  { key:'exit',      label:'Mark Exit',        short:'Exit'      },
   { key:'all',       label:'All Reservations', short:'All'       },
 ];
 
@@ -297,6 +298,7 @@ export default function ManagerDashboard() {
   const [savingSlots, setSavingSlots] = useState(false);
   const [confirm,  setConfirm]  = useState(null);
   const [spinning, setSpinning] = useState(false);
+  const [view,     setView]     = useState('table'); // 'table' | 'card'
 
   /* ── Load ── */
   const load = useCallback(async () => {
@@ -310,7 +312,7 @@ export default function ManagerDashboard() {
       const [s, r] = await Promise.all([
         managerService.getTodayStats(p.id),
         managerService.getParkingReservations(p.id, {
-          status: tab === 'all' ? '' : tab,
+          status: tab === 'all' ? '' : tab === 'exit' ? 'active' : tab,
           search,
         }),
       ]);
@@ -664,13 +666,32 @@ export default function ManagerDashboard() {
                         {stats.active}
                       </span>
                     )}
+                    {t.key==='exit' && stats?.active>0 && (
+                      <span className="text-[10px] font-bold bg-green-500 text-white px-1 rounded-full leading-4 animate-pulse">
+                        {stats.active}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Reservation list */}
-            <div className="p-5">
+            {/* View toggle + list */}
+            <div className="px-5 pb-2 flex items-center justify-between">
+              <p className="text-xs text-gray-400">{items.length} result{items.length !== 1 ? 's' : ''}</p>
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+                <button onClick={() => setView('card')}
+                  className={`p-1.5 rounded-md transition-all ${view === 'card' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                </button>
+                <button onClick={() => setView('table')}
+                  className={`p-1.5 rounded-md transition-all ${view === 'table' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5 pt-3">
               {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Array(4).fill(0).map((_,i) => <div key={i} className="h-48 bg-gray-50 rounded-2xl animate-pulse"/>)}
@@ -683,19 +704,97 @@ export default function ManagerDashboard() {
                     </svg>
                   </div>
                   <p className="text-sm text-gray-400">
-                    {search ? `No results for "${search}"` : `No ${tab === 'all' ? '' : tab} reservations`}
+                    {search ? `No results for "${search}"` : tab === 'exit' ? 'No active vehicles to exit' : `No ${tab === 'all' ? '' : tab} reservations`}
                   </p>
                   {search && (
-                    <button onClick={() => { setSearch(''); load(); }} className="text-xs text-indigo-600 hover:underline">
-                      Clear search
-                    </button>
+                    <button onClick={() => { setSearch(''); load(); }} className="text-xs text-indigo-600 hover:underline">Clear search</button>
                   )}
                 </div>
-              ) : (
+              ) : view === 'card' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {items.map(r => (
-                    <ReservationCard key={r.id} r={r} onAction={handleAction}/>
-                  ))}
+                  {items.map(r => <ReservationCard key={r.id} r={r} onAction={handleAction}/>)}
+                </div>
+              ) : (
+                /* ── Table view ── */
+                <div className="overflow-x-auto rounded-2xl border border-gray-100">
+                  <table className="w-full" style={{ minWidth:'700px' }}>
+                    <thead>
+                      <tr style={{ background:'#fafbff' }}>
+                        {['#','Driver','Vehicle','Period','Amount','Status','Actions'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap border-b border-gray-100">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {items.map(r => (
+                        <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="px-4 py-3.5">
+                            <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg">
+                              #{String(r.id).padStart(4,'0')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                                style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+                                {(r.driver?.name||'U').charAt(0)}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-800 truncate max-w-[120px]">{r.driver?.name||'—'}</p>
+                                <p className="text-xs text-gray-400 truncate max-w-[120px]">{r.driver?.phone||r.driver?.email||''}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg">{r.vehicle_number}</span>
+                            <p className="text-[11px] text-gray-400 capitalize mt-0.5">{r.vehicle_type||''}</p>
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <p className="text-xs text-gray-700">{formatDateTime(r.start_time)}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">→ {formatDateTime(r.end_time)}</p>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <p className="text-sm font-bold text-gray-900">{formatCurrency(r.total_amount)}</p>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border capitalize ${
+                              r.status==='pending'   ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                              r.status==='confirmed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                              r.status==='active'    ? 'bg-green-50 border-green-200 text-green-700' :
+                              r.status==='completed' ? 'bg-gray-100 border-gray-200 text-gray-600' :
+                              'bg-red-50 border-red-200 text-red-600'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                r.status==='pending'?'bg-amber-400':r.status==='confirmed'?'bg-blue-500':
+                                r.status==='active'?'bg-green-500':r.status==='completed'?'bg-gray-400':'bg-red-400'}`}/>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <div className="flex gap-1.5 flex-nowrap">
+                              {r.status==='pending' && <>
+                                <button onClick={()=>handleAction(r.id,'reject')}
+                                  className="px-2.5 py-1.5 text-[11px] font-bold text-white rounded-lg"
+                                  style={{ background:'linear-gradient(135deg,#ef4444,#dc2626)' }}>Reject</button>
+                                <button onClick={()=>handleAction(r.id,'approve')}
+                                  className="px-2.5 py-1.5 text-[11px] font-bold text-white rounded-lg"
+                                  style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>Approve</button>
+                              </>}
+                              {r.status==='confirmed' && (
+                                <button onClick={()=>handleAction(r.id,'entry')}
+                                  className="px-2.5 py-1.5 text-[11px] font-bold text-white rounded-lg"
+                                  style={{ background:'linear-gradient(135deg,#2563eb,#4f46e5)' }}>Entry</button>
+                              )}
+                              {r.status==='active' && (
+                                <button onClick={()=>handleAction(r.id,'exit')}
+                                  className="px-2.5 py-1.5 text-[11px] font-bold text-white rounded-lg"
+                                  style={{ background:'linear-gradient(135deg,#059669,#10b981)' }}>Exit</button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

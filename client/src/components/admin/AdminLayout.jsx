@@ -42,10 +42,28 @@ const NAV = [
   { to: '/admin/settings',     icon: Icons.Settings,     label: 'Settings'      },
 ];
 
+function useLiveBadges() {
+  const [badges, setBadges] = useState({ pending: 0, active: 0 });
+  useEffect(() => {
+    const load = async () => {
+      const [{ count: pending }, { count: active }] = await Promise.all([
+        supabase.from('parking_locations').select('id', { count:'exact', head:true }).eq('status','pending'),
+        supabase.from('reservations').select('id', { count:'exact', head:true }).eq('status','active'),
+      ]);
+      setBadges({ pending: pending||0, active: active||0 });
+    };
+    load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
+  }, []);
+  return badges;
+}
+
 function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
   const navigate          = useNavigate();
   const [confirm, setConfirm] = useState(null);
+  const badges = useLiveBadges();
 
   const handleLogout = () => {
     setConfirm({
@@ -91,8 +109,21 @@ function Sidebar({ onClose }) {
                   style={{ color: isActive ? '#fff' : '#6366f1' }}>
                   <NavIcon />
                 </span>
-                <span>{label}</span>
-                {isActive && (
+                <span className="flex-1">{label}</span>
+                {/* Live badges */}
+                {to === '/admin/pending' && badges.pending > 0 && (
+                  <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold px-1.5"
+                    style={{ background: isActive ? 'rgba(255,255,255,0.25)' : '#ef4444', color: '#fff' }}>
+                    {badges.pending > 99 ? '99+' : badges.pending}
+                  </span>
+                )}
+                {to === '/admin/reservations' && badges.active > 0 && (
+                  <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold px-1.5"
+                    style={{ background: isActive ? 'rgba(255,255,255,0.25)' : '#22c55e', color: '#fff' }}>
+                    {badges.active > 99 ? '99+' : badges.active}
+                  </span>
+                )}
+                {isActive && !(['/admin/pending','/admin/reservations'].includes(to) && (badges.pending>0||badges.active>0)) && (
                   <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/70 flex-shrink-0" />
                 )}
               </>

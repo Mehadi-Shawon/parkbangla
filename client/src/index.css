@@ -67,9 +67,9 @@
 .admin-card-accent-violet { border-left: 3px solid #8b5cf6; }
 
 .admin-th {
-  @apply px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest;
-  color: #6366f1;
-  background: linear-gradient(to right, #eef2ff, #f5f3ff);
+  @apply px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest whitespace-nowrap;
+  color: #c7d2fe;
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
 }
 
 .admin-tr {
@@ -90,9 +90,20 @@
 }
 .leaflet-container {
   font-family: inherit;
+  z-index: 0;
 }
 .leaflet-tile-pane img {
   max-width: none !important;
+}
+/* Prevent Leaflet from overflowing its container */
+.leaflet-map-pane,
+.leaflet-tile-pane,
+.leaflet-objects-pane,
+.leaflet-overlay-pane,
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane {
+  will-change: transform;
 }
 
 @layer base {

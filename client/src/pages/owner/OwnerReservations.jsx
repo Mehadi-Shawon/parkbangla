@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import OwnerLayout from '../../components/owner/OwnerLayout';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +20,58 @@ const STATUS_CONFIG = {
   cancelled: { bg:'bg-red-50',    border:'border-red-100',    text:'text-red-600',    dot:'bg-red-400' },
   pending:   { bg:'bg-amber-50',  border:'border-amber-100',  text:'text-amber-700',  dot:'bg-amber-400' },
 };
+
+/* ── Swipeable card for pending reservations ───────────────
+   Swipe RIGHT → Reject (red reveals on left)
+   Swipe LEFT  → Approve (green reveals on right)
+─────────────────────────────────────────────────────────── */
+function SwipeCard({ onApprove, onReject, children }) {
+  const [dx, setDx]   = useState(0);
+  const startX        = useRef(null);
+  const active        = useRef(false);
+  const THRESHOLD     = 80;
+
+  const onTouchStart = (e) => { startX.current = e.touches[0].clientX; active.current = true; };
+  const onTouchMove  = (e) => {
+    if (!active.current) return;
+    const delta = e.touches[0].clientX - startX.current;
+    setDx(Math.max(-130, Math.min(130, delta)));
+  };
+  const onTouchEnd = () => {
+    if (dx >= THRESHOLD)       onApprove();
+    else if (dx <= -THRESHOLD) onReject();
+    setDx(0); active.current = false;
+  };
+
+  const approvePct = Math.min(1, Math.max(0,  dx / THRESHOLD));
+  const rejectPct  = Math.min(1, Math.max(0, -dx / THRESHOLD));
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden select-none">
+      {/* Approve — left side reveals when swiping right */}
+      <div className="absolute inset-0 flex items-center pl-5"
+        style={{ background:'linear-gradient(90deg,#16a34a,#22c55e)', opacity: approvePct }}>
+        <div className="flex items-center gap-2 text-white font-bold text-sm">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
+          Approve
+        </div>
+      </div>
+      {/* Reject — right side reveals when swiping left */}
+      <div className="absolute inset-0 flex items-center justify-end pr-5"
+        style={{ background:'linear-gradient(270deg,#dc2626,#ef4444)', opacity: rejectPct }}>
+        <div className="flex items-center gap-2 text-white font-bold text-sm">
+          Reject
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/></svg>
+        </div>
+      </div>
+      {/* Card body */}
+      <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        style={{ transform:`translateX(${dx}px)`, transition: active.current ? 'none' : 'transform 0.25s ease' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 const StatusBadge = ({ status }) => {
   const c = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
@@ -231,12 +283,20 @@ export default function OwnerReservations() {
               <p className="text-gray-500 text-sm">No reservations found.</p>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="md:bg-white md:rounded-2xl md:border md:border-gray-100 md:shadow-sm overflow-hidden">
 
               {/* Mobile card list */}
-              <div className="md:hidden divide-y divide-gray-50">
-                {reservations.map(r => (
-                  <div key={`m-${r.id}`} className="p-4 space-y-2.5">
+              {reservations.some(r => r.status === 'pending') && (
+                <div className="md:hidden flex items-center justify-center gap-2 pt-3 pb-1">
+                  <span className="text-[11px] text-gray-400">← swipe left to reject</span>
+                  <span className="w-1 h-1 rounded-full bg-gray-300"/>
+                  <span className="text-[11px] text-gray-400">swipe right to approve →</span>
+                </div>
+              )}
+              <div className="md:hidden p-3 space-y-3">
+                {reservations.map(r => {
+                  const cardContent = (
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg flex-shrink-0">
@@ -270,15 +330,15 @@ export default function OwnerReservations() {
                     {['pending','confirmed','active'].includes(r.status) && (
                       <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                         {r.status==='pending' && <>
-                          <button onClick={()=>handleAction(r.id,'approve')} disabled={actioning===r.id}
-                            className="flex-1 py-2 text-xs font-bold text-white rounded-xl disabled:opacity-40"
-                            style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>
-                            {actioning===r.id?'…':'✓ Approve'}
-                          </button>
                           <button onClick={()=>handleAction(r.id,'reject')} disabled={actioning===r.id}
                             className="flex-1 py-2 text-xs font-bold text-white rounded-xl disabled:opacity-40"
                             style={{ background:'linear-gradient(135deg,#ef4444,#dc2626)' }}>
                             {actioning===r.id?'…':'✕ Reject'}
+                          </button>
+                          <button onClick={()=>handleAction(r.id,'approve')} disabled={actioning===r.id}
+                            className="flex-1 py-2 text-xs font-bold text-white rounded-xl disabled:opacity-40"
+                            style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>
+                            {actioning===r.id?'…':'✓ Approve'}
                           </button>
                         </>}
                         {r.status==='confirmed' && (
@@ -298,7 +358,17 @@ export default function OwnerReservations() {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                  return r.status === 'pending' ? (
+                    <SwipeCard key={`m-${r.id}`}
+                      onApprove={() => handleAction(r.id,'approve')}
+                      onReject={()  => handleAction(r.id,'reject')}>
+                      {cardContent}
+                    </SwipeCard>
+                  ) : (
+                    <div key={`m-${r.id}`}>{cardContent}</div>
+                  );
+                })}
               </div>
 
               {/* Desktop table */}
@@ -354,15 +424,15 @@ export default function OwnerReservations() {
                           <div className="flex gap-1 items-center flex-nowrap">
                             {r.status === 'pending' && (
                               <>
-                                <button onClick={() => handleAction(r.id,'approve')} disabled={actioning===r.id}
-                                  className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold text-white rounded-lg transition-all disabled:opacity-40 whitespace-nowrap hover:brightness-110 hover:scale-105 active:scale-95"
-                                  style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>
-                                  {actioning===r.id ? '…' : <><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>Approve</>}
-                                </button>
                                 <button onClick={() => handleAction(r.id,'reject')} disabled={actioning===r.id}
                                   className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold text-white rounded-lg transition-all disabled:opacity-40 whitespace-nowrap hover:brightness-110 hover:scale-105 active:scale-95"
                                   style={{ background:'linear-gradient(135deg,#ef4444,#dc2626)' }}>
                                   {actioning===r.id ? '…' : <><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/></svg>Reject</>}
+                                </button>
+                                <button onClick={() => handleAction(r.id,'approve')} disabled={actioning===r.id}
+                                  className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold text-white rounded-lg transition-all disabled:opacity-40 whitespace-nowrap hover:brightness-110 hover:scale-105 active:scale-95"
+                                  style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)' }}>
+                                  {actioning===r.id ? '…' : <><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>Approve</>}
                                 </button>
                               </>
                             )}

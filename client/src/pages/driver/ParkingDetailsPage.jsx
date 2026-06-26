@@ -26,7 +26,7 @@ export default function ParkingDetailsPage() {
   if (loading) return <PageLoader />;
 
   if (!parking) return (
-    <div className="min-h-screen flex flex-col"><Navbar />
+    <div className="min-h-screen pb-20 lg:pb-0 flex flex-col"><Navbar />
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-500 text-lg mb-4">Parking location not found.</p>
@@ -46,7 +46,7 @@ export default function ParkingDetailsPage() {
   const barLabel = pct===0 ? 'Full' : pct<30 ? 'Critical' : pct<60 ? 'Low' : 'Available';
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background:'#f8fafc' }}>
+    <div className="min-h-screen pb-20 lg:pb-0 flex flex-col" style={{ background:'#f8fafc' }}>
       <Navbar />
       <div className="flex-1">
 

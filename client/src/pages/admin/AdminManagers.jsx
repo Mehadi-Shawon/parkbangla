@@ -72,21 +72,26 @@ export default function AdminManagers() {
         <AdminPageHeader
           icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>}
           label="Management" title="Parking Managers"
-          subtitle={`${managers.length} manager account${managers.length !== 1 ? 's' : ''}`}
+          subtitle="Manager accounts across all parking locations"
           color="#8b5cf6"
+          stats={[
+            { value: managers.length, label: 'Total'      },
+            { value: assigned.length, label: 'Assigned'   },
+            { value: managers.filter(m => !m.parking).length, label: 'Unassigned' },
+          ]}
         />
 
         {/* Stats row */}
         {!loading && (
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
             {[
               { label: 'Total Managers',    value: managers.length,   color: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
               { label: 'Assigned to Lot',   value: assigned.length,   color: 'bg-green-50 text-green-700 border-green-100'    },
               { label: 'No Assignment',     value: unassigned.length, color: unassigned.length > 0 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-gray-50 text-gray-500 border-gray-100' },
             ].map(s => (
-              <div key={s.label} className={`rounded-2xl border p-4 text-center ${s.color}`}>
-                <p className="text-2xl font-extrabold">{s.value}</p>
-                <p className="text-xs font-semibold mt-0.5 opacity-75">{s.label}</p>
+              <div key={s.label} className={`rounded-2xl border p-3 sm:p-4 text-center ${s.color}`}>
+                <p className="text-xl sm:text-2xl font-extrabold">{s.value}</p>
+                <p className="text-[10px] sm:text-xs font-semibold mt-0.5 opacity-75 leading-tight">{s.label}</p>
               </div>
             ))}
           </div>
@@ -131,11 +136,6 @@ export default function AdminManagers() {
               const parking = Array.isArray(m.parking) ? m.parking[0] : m.parking;
               return (
                 <div key={m.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
-                  {/* Top accent */}
-                  <div className="h-1 w-full" style={{
-                    background: !m.is_active ? '#e2e8f0' : parking ? 'linear-gradient(90deg,#22c55e,#16a34a)' : 'linear-gradient(90deg,#f59e0b,#d97706)'
-                  }}/>
-
                   <div className="p-5">
                     {/* Manager info */}
                     <div className="flex items-start gap-3 mb-4">
