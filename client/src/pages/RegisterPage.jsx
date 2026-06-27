@@ -10,9 +10,8 @@ const ROLES = [
     label: 'Driver',
     sub: 'Find & reserve parking spots',
     icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2.5.5M13 16H3m10 0h1m3-10h-3a2 2 0 00-2 2v1h7.5L19 7l-2-1z"/>
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
       </svg>
     ),
     color: '#22c55e',
@@ -95,15 +94,8 @@ export default function RegisterPage() {
         </div>
 
         {/* Logo */}
-        <Link to="/" className="relative flex items-center gap-2.5 w-fit">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.2)' }}>
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-          </div>
-          <span className="text-base font-extrabold text-white">ParkBangla</span>
+        <Link to="/" className="relative w-fit">
+          <span className="font-brand text-2xl text-white">ParkBangla</span>
         </Link>
 
         {/* Center content */}
@@ -143,17 +135,11 @@ export default function RegisterPage() {
       </div>
 
       {/* ── Right panel (form) ── */}
-      <div className="flex-1 flex items-center justify-center px-6 py-10 relative overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-8 py-10 bg-white relative overflow-y-auto">
 
         {/* Mobile logo */}
-        <Link to="/" className="lg:hidden absolute top-6 left-6 flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
-            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            </svg>
-          </div>
-          <span className="text-sm font-extrabold text-gray-900">ParkBangla</span>
+        <Link to="/" className="lg:hidden absolute top-6 left-6">
+          <span className="font-brand text-xl text-gray-900">ParkBangla</span>
         </Link>
 
         <div className="w-full max-w-sm py-8">
@@ -207,7 +193,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Name + Phone */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name *</label>
                 <input name="name" type="text" required placeholder="John Smith"
@@ -233,7 +219,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Passwords */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password *</label>
                 <div className="relative">

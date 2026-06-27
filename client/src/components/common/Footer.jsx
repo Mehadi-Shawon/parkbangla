@@ -69,7 +69,7 @@ export default function Footer() {
           <div className="lg:col-span-1 flex flex-col gap-6">
             {/* Logo */}
             <Link to="/" className="w-fit">
-              <span className="text-xl text-white" style={{ fontFamily:"'Black Ops One', cursive", letterSpacing:'0.01em' }}>
+              <span className="font-brand text-xl text-white">
                 ParkBangla
               </span>
             </Link>

@@ -106,7 +106,7 @@ export default function LandingPage() {
               style={{ fontFamily:"'Roboto Slab', serif", fontWeight:700 }}>
               Find. Book.{' '}
               <span className="text-transparent bg-clip-text"
-                style={{ backgroundImage:'linear-gradient(90deg,#818cf8 0%,#60a5fa 50%,#a78bfa 100%)' }}>
+                style={{ backgroundImage:'linear-gradient(90deg,#4ade80 0%,#22c55e 50%,#16a34a 100%)' }}>
                 Park.
               </span>
             </h1>

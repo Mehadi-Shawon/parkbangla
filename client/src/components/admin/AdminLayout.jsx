@@ -100,7 +100,7 @@ function Sidebar({ onClose }) {
         style={{ borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
         <Icons.Logo />
         <div>
-          <p className="font-extrabold text-base leading-tight text-white tracking-tight">ParkBangla</p>
+          <p className="font-brand text-lg leading-tight text-white">ParkBangla</p>
           <p className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color:'rgba(165,180,252,0.5)' }}>Admin Console</p>
         </div>
       </div>

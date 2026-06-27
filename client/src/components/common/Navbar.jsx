@@ -243,8 +243,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link to="/" className="flex items-center flex-shrink-0 group">
-              <span className={`text-lg sm:text-xl md:text-2xl transition-colors ${logoTextColor}`}
-                style={{ fontFamily:"'Black Ops One', cursive", letterSpacing:'0.01em' }}>
+              <span className={`font-brand text-lg sm:text-xl md:text-2xl transition-colors ${logoTextColor}`}>
                 ParkBangla
               </span>
             </Link>

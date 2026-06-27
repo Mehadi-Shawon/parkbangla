@@ -5,6 +5,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Brand font ──────────────────────────────────────── */
+.font-brand {
+  font-family: 'Black Ops One', cursive;
+  letter-spacing: 0.01em;
+}
+
+/* ── Global heading font ─────────────────────────────── */
+h1, h2, h3 {
+  font-family: 'Roboto Slab', serif;
+}
+
 /* ── Glassmorphism utilities ─────────────────────────── */
 .glass {
   background: #ffffff;
