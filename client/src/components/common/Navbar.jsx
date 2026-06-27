@@ -217,10 +217,7 @@ export default function Navbar() {
     user?.role === 'owner'   ? '/owner'   :
     user?.role === 'manager' ? '/manager' : '/dashboard';
 
-  const navLinks = user ? [] : [
-    { to: '/',       label: 'Home',        exact: true },
-    { to: '/search', label: 'Find Parking' },
-  ];
+  const navLinks = [];
 
   /* ── Always indigo gradient — just adjust opacity on scroll ── */
   const navBg = 'border-white/10';
@@ -245,16 +242,9 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
-                style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 0 12px rgba(99,102,241,0.4)' }}>
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-              </div>
-              <span className={`text-base font-extrabold tracking-tight transition-colors ${logoTextColor}`}>
+            <Link to="/" className="flex items-center flex-shrink-0 group">
+              <span className={`text-lg sm:text-xl md:text-2xl transition-colors ${logoTextColor}`}
+                style={{ fontFamily:"'Black Ops One', cursive", letterSpacing:'0.01em' }}>
                 ParkBangla
               </span>
             </Link>
@@ -336,30 +326,33 @@ export default function Navbar() {
                   )}
                 </div>
               ) : (
-                <div className="hidden md:flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Link to="/login"
-                    className="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200">
-                    Sign in
+                    className="px-4 py-2 rounded-xl text-sm font-semibold text-white/75 hover:text-white transition-all duration-200"
+                    style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', backdropFilter:'blur(8px)' }}>
+                    Sign In
                   </Link>
                   <Link to="/register"
-                    className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-                    style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 2px 10px rgba(99,102,241,0.4)' }}>
+                    className="px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-95 hover:scale-105 active:scale-95"
+                    style={{ background:'#ffffff', color:'#4338ca', boxShadow:'0 2px 12px rgba(255,255,255,0.2)' }}>
                     Get Started
                   </Link>
                 </div>
               )}
 
-              {/* Mobile hamburger — guests + manager (driver/owner use bottom nav) */}
-              <button onClick={() => setMenu(v => !v)}
-                className={`${user && user.role !== 'manager' ? 'hidden' : 'md:hidden'} w-8 h-8 flex items-center justify-center rounded-xl transition-all ${burgerColor}`}
-                style={{ background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.15)' }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {menu
-                    ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
-                    : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
-                  }
-                </svg>
-              </button>
+              {/* Mobile hamburger — manager only (driver/owner use bottom nav) */}
+              {user?.role === 'manager' && (
+                <button onClick={() => setMenu(v => !v)}
+                  className="md:hidden w-8 h-8 flex items-center justify-center rounded-xl transition-all"
+                  style={{ background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.15)' }}>
+                  <svg className={`w-5 h-5 ${burgerColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {menu
+                      ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                      : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
+                    }
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>

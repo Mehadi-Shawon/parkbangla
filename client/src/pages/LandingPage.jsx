@@ -57,9 +57,9 @@ const STATS = [
 ];
 
 const TESTIMONIALS = [
-  { name:'Sarah K.', role:'Daily Commuter',     text:'ParkBangla saved me 30 minutes every morning. I book on my phone before leaving home!',    stars:5 },
-  { name:'James T.', role:'Parking Owner',      text:'My occupancy went from 60% to 95% after listing on ParkBangla. The analytics are great.',  stars:5 },
-  { name:'Maria L.', role:'Business Traveller', text:'Finding parking in the city used to stress me out. Now I arrive knowing exactly where to go.', stars:5 },
+  { name:'Sarah K.', role:'Daily Commuter',     text:'ParkBangla saved me 30 minutes every morning. I book on my phone before leaving home!',      stars:5, color:'#6366f1', initials:'SK' },
+  { name:'James T.', role:'Parking Owner',      text:'My occupancy went from 60% to 95% after listing on ParkBangla. The analytics are great.',    stars:5, color:'#22c55e', initials:'JT' },
+  { name:'Maria L.', role:'Business Traveller', text:'Finding parking in the city used to stress me out. Now I arrive knowing exactly where to go.', stars:5, color:'#f59e0b', initials:'ML' },
 ];
 
 export default function LandingPage() {
@@ -102,17 +102,17 @@ export default function LandingPage() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-5 tracking-tight">
-              Park Smarter,
-              <br/>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.1] mb-5"
+              style={{ fontFamily:"'Roboto Slab', serif", fontWeight:700 }}>
+              Find. Book.{' '}
               <span className="text-transparent bg-clip-text"
                 style={{ backgroundImage:'linear-gradient(90deg,#818cf8 0%,#60a5fa 50%,#a78bfa 100%)' }}>
-                Stress Less
+                Park.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-white/55 mb-7 leading-relaxed max-w-xl mx-auto">
-              Find, book and manage parking in seconds. Real-time availability, transparent pricing, instant confirmation.
+              Bangladesh's smartest parking platform — reserve a spot in under a minute, anywhere in the city.
             </p>
 
             {/* Search bar */}
@@ -177,30 +177,30 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ───────────────────────────────────────── */}
-      <section className="py-16 sm:py-24 bg-white">
+      <section className="py-12 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-4">
+          <div className="text-center mb-10 sm:mb-14">
+            <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-3">
               Why ParkBangla
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl text-gray-900 mb-3" style={{ fontFamily:"'Roboto Slab', serif", fontWeight:700 }}>
               Everything you need, nothing you don't
             </h2>
-            <p className="text-gray-500 max-w-lg mx-auto text-base">
+            <p className="text-gray-500 max-w-lg mx-auto text-sm sm:text-base">
               A complete parking management platform for drivers and operators.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
             {FEATURES.map(f => (
               <div key={f.title}
-                className="group p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-default bg-white">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
+                className="group p-4 sm:p-5 lg:p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-default bg-white">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-4 sm:mb-5 transition-transform group-hover:scale-110"
                   style={{ background:f.bg, color:f.color }}>
                   {f.icon}
                 </div>
-                <h3 className="text-base font-bold text-gray-900 mb-2 group-hover:text-indigo-700 transition-colors">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+                <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1.5 sm:mb-2 group-hover:text-indigo-700 transition-colors">{f.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -208,32 +208,30 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────────────────── */}
-      <section className="py-16 sm:py-24" style={{ background:'#f8fafc' }}>
+      <section className="py-12 sm:py-20 lg:py-24" style={{ background:'#f8fafc' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-4">
+          <div className="text-center mb-10 sm:mb-14">
+            <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-3">
               Simple Process
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl text-gray-900 mb-3" style={{ fontFamily:"'Roboto Slab', serif", fontWeight:700 }}>
               Parked in 4 easy steps
             </h2>
-            <p className="text-gray-500 max-w-md mx-auto">From search to parked — the entire process takes under 2 minutes.</p>
+            <p className="text-sm sm:text-base text-gray-500 max-w-md mx-auto">From search to parked — the entire process takes under 2 minutes.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
             {STEPS.map((s, i) => (
-              <div key={s.n} className="relative bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-all group">
-                {/* Step number */}
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-extrabold mb-5 transition-transform group-hover:scale-105"
-                  style={{ background:`linear-gradient(135deg,${s.color},${s.color}bb)`, boxShadow:`0 6px 20px ${s.color}30` }}>
+              <div key={s.n} className="relative bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-all group">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center text-white text-base sm:text-lg lg:text-xl font-extrabold mb-3 sm:mb-4 lg:mb-5 transition-transform group-hover:scale-105"
+                  style={{ background:`linear-gradient(135deg,${s.color},${s.color}bb)`, boxShadow:`0 4px 14px ${s.color}30` }}>
                   {s.n}
                 </div>
-                {/* Connector dot (desktop) */}
                 {i < STEPS.length - 1 && (
                   <div className="hidden lg:block absolute top-[52px] left-[calc(100%-1px)] w-6 h-px bg-gray-200 z-10"/>
                 )}
-                <h3 className="text-base font-bold text-gray-900 mb-2">{s.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+                <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1 sm:mb-2">{s.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -244,7 +242,7 @@ export default function LandingPage() {
       <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Built for everyone</h2>
+            <h2 className="text-3xl sm:text-4xl text-gray-900 mb-4" style={{ fontFamily:"'Roboto Slab', serif", fontWeight:700 }}>Built for everyone</h2>
             <p className="text-gray-500 max-w-md mx-auto">Whether you park or own a lot, ParkBangla works for you.</p>
           </div>
 
@@ -329,36 +327,61 @@ export default function LandingPage() {
       </section>
 
       {/* ── TESTIMONIALS ───────────────────────────────────── */}
-      <section className="py-16 sm:py-24" style={{ background:'#f8fafc' }}>
+      <section className="py-12 sm:py-20 lg:py-24" style={{ background:'#f8fafc' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="inline-block text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-full px-4 py-1.5 mb-4">
+          <div className="text-center mb-10 sm:mb-14">
+            <span className="inline-block text-xs font-bold text-amber-600 uppercase tracking-widest bg-amber-50 border border-amber-100 rounded-full px-4 py-1.5 mb-3">
               Testimonials
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Loved by drivers and owners</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl text-gray-900 mb-2" style={{ fontFamily:"'Roboto Slab', serif", fontWeight:700 }}>Loved by drivers and owners</h2>
+            <p className="text-sm text-gray-400">Real stories from real users</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {/* Mobile: horizontal scroll | Desktop: grid */}
+          <div className="flex sm:grid sm:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory"
+            style={{ scrollbarWidth:'none', msOverflowStyle:'none' }}>
             {TESTIMONIALS.map(t => (
-              <div key={t.name} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
-                <div className="flex gap-1 mb-4">
+              <div key={t.name}
+                className="flex-shrink-0 w-[80vw] sm:w-auto snap-center rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  background:'rgba(255,255,255,0.85)',
+                  backdropFilter:'blur(20px)',
+                  WebkitBackdropFilter:'blur(20px)',
+                  border:`1px solid ${t.color}18`,
+                  boxShadow:`0 4px 24px rgba(0,0,0,0.07), 0 0 0 1px ${t.color}10`,
+                }}>
+
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-4">
                   {Array(t.stars).fill(0).map((_,i) => (
-                    <svg key={i} className="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 24 24">
+                    <svg key={i} className="w-4 h-4 fill-current text-amber-400" viewBox="0 0 24 24">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                   ))}
                 </div>
+
+                {/* Quote */}
                 <p className="text-gray-600 text-sm leading-relaxed mb-6">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                    style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
-                    {t.name.charAt(0)}
+
+                {/* Author */}
+                <div className="flex items-center gap-3 pt-4" style={{ borderTop:'1px solid #f1f5f9' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0"
+                    style={{ background:`linear-gradient(135deg,${t.color},${t.color}aa)`, boxShadow:`0 4px 12px ${t.color}40` }}>
+                    {t.initials}
                   </div>
                   <div>
                     <p className="text-sm font-bold text-gray-900">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.role}</p>
+                    <p className="text-xs font-medium" style={{ color: t.color }}>{t.role}</p>
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* Mobile scroll dots */}
+          <div className="flex sm:hidden justify-center gap-1.5 mt-5">
+            {TESTIMONIALS.map((_,i) => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background:'#cbd5e1' }}/>
             ))}
           </div>
         </div>
@@ -374,7 +397,7 @@ export default function LandingPage() {
             style={{ backgroundImage:'radial-gradient(circle,#ffffff 1px,transparent 1px)', backgroundSize:'32px 32px' }}/>
         </div>
         <div className="relative max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight">
+          <h2 className="text-3xl sm:text-4xl text-white mb-4 leading-tight" style={{ fontFamily:"'Roboto Slab', serif", fontWeight:700 }}>
             Ready to park without the stress?
           </h2>
           <p className="text-white/50 mb-10 text-base leading-relaxed">

@@ -68,15 +68,10 @@ export default function Footer() {
           {/* Brand — col span 1 */}
           <div className="lg:col-span-1 flex flex-col gap-6">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 w-fit">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 0 16px rgba(99,102,241,0.5)' }}>
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-              </div>
-              <span className="text-base font-extrabold text-white tracking-tight">ParkBangla</span>
+            <Link to="/" className="w-fit">
+              <span className="text-xl text-white" style={{ fontFamily:"'Black Ops One', cursive", letterSpacing:'0.01em' }}>
+                ParkBangla
+              </span>
             </Link>
 
             <p className="text-xs text-white/30 leading-relaxed">
@@ -143,9 +138,15 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-white/20 order-2 sm:order-1">
-            © {new Date().getFullYear()} ParkBangla, Inc. All rights reserved.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 order-2 sm:order-1">
+            <p className="text-xs text-white/20">
+              © {new Date().getFullYear()} ParkBangla, Inc. All rights reserved.
+            </p>
+            <span className="hidden sm:block text-white/10">·</span>
+            <p className="text-[11px] text-white/15">
+              Designed & developed by <a href="https://qraftdigital.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-400/60 font-semibold hover:text-indigo-400 transition-colors">Qraft Digital</a>
+            </p>
+          </div>
           <div className="flex items-center gap-5 order-1 sm:order-2">
             {['Privacy Policy','Terms of Service','Cookie Policy'].map(l => (
               <Link key={l} to="/" className="text-xs text-white/20 hover:text-white/45 transition-colors">
