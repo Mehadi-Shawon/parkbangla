@@ -20,7 +20,7 @@ export const calcAmount = (hourlyRate, startTime, endTime) => {
 };
 
 export const formatCurrency = (amount) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount ?? 0);
+  new Intl.NumberFormat('en-BD', { style: 'currency', currency: 'BDT' }).format(amount ?? 0);
 
 export const statusColor = (status) => {
   const map = {

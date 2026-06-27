@@ -45,18 +45,18 @@
 
 /* ── Admin panel enhancements ────────────────────────── */
 .admin-bg {
-  background-color: #f0f4ff;
-  background-image: radial-gradient(circle, #d8def5 1px, transparent 1px);
-  background-size: 22px 22px;
+  background-color: #ffffff;
 }
 
 .admin-card {
-  @apply bg-white rounded-2xl border border-gray-100 shadow-sm;
-  box-shadow: 0 1px 3px rgba(79,70,229,0.06), 0 4px 16px rgba(79,70,229,0.04);
-  transition: box-shadow 0.2s;
+  @apply bg-white rounded-2xl;
+  border: 1px solid rgba(99,102,241,0.12);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(99,102,241,0.04);
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 .admin-card:hover {
-  box-shadow: 0 4px 12px rgba(79,70,229,0.10), 0 8px 32px rgba(79,70,229,0.06);
+  border-color: rgba(99,102,241,0.22);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.09), 0 0 0 1px rgba(99,102,241,0.08);
 }
 
 .admin-card-accent-blue   { border-left: 3px solid #3b82f6; }
@@ -68,8 +68,9 @@
 
 .admin-th {
   @apply px-5 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest whitespace-nowrap;
-  color: #c7d2fe;
-  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  color: #6366f1;
+  background: #f5f7ff;
+  border-bottom: 2px solid #e0e7ff;
 }
 
 .admin-tr {

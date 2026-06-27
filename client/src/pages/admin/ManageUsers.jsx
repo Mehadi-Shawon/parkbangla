@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import UserDetailDrawer from "../../components/admin/UserDetailDrawer";
@@ -8,18 +8,32 @@ import { formatDate } from "../../utils/helpers";
 import { downloadCSV, USER_COLUMNS } from "../../utils/csvExport";
 import toast from "react-hot-toast";
 
-const ROLES = ["","driver","owner","admin"];
+const ROLES = [
+  { key:"",       label:"All"     },
+  { key:"driver", label:"Drivers" },
+  { key:"owner",  label:"Owners"  },
+  { key:"manager",label:"Managers"},
+  { key:"admin",  label:"Admins"  },
+];
 const LIMIT = 15;
 
+const ROLE_STYLE = {
+  admin:   { bg:"#f5f3ff", color:"#7c3aed", border:"#ddd6fe" },
+  owner:   { bg:"#eff6ff", color:"#2563eb", border:"#bfdbfe" },
+  driver:  { bg:"#f0fdf4", color:"#16a34a", border:"#bbf7d0" },
+  manager: { bg:"#eef2ff", color:"#4f46e5", border:"#c7d2fe" },
+};
+
 export default function ManageUsers() {
-  const [users,      setUsers]      = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [search,     setSearch]     = useState("");
-  const [role,       setRole]       = useState("");
-  const [page,       setPage]       = useState(1);
-  const [total,      setTotal]      = useState(0);
+  const [users,    setUsers]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [search,   setSearch]   = useState("");
+  const [role,     setRole]     = useState("");
+  const [page,     setPage]     = useState(1);
+  const [total,    setTotal]    = useState(0);
   const [toggling, setToggling] = useState(null);
   const [drawer,   setDrawer]   = useState(null);
+  const [summary,  setSummary]  = useState(null);
 
   const load = async (p=1, r=role, s=search) => {
     setLoading(true);
@@ -30,7 +44,19 @@ export default function ManageUsers() {
     finally  { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []);
+  const loadSummary = async () => {
+    const { data } = await adminService.getAllUsers({ limit: 1000 });
+    const all = data || [];
+    setSummary({
+      total:   all.length,
+      drivers: all.filter(u => u.role==='driver').length,
+      owners:  all.filter(u => u.role==='owner').length,
+      managers:all.filter(u => u.role==='manager').length,
+      admins:  all.filter(u => u.role==='admin').length,
+    });
+  };
+
+  useEffect(() => { load(); loadSummary(); }, []);
 
   const handleToggle = async (id, isActive, name) => {
     setToggling(id);
@@ -44,124 +70,201 @@ export default function ManageUsers() {
   };
 
   const exportCSV = () => downloadCSV(users, USER_COLUMNS, `users-${new Date().toISOString().slice(0,10)}.csv`);
-
-  const roleBadge = (r) => ({
-    admin:  "bg-violet-100 text-violet-700 border-violet-200",
-    owner:  "bg-blue-100 text-blue-700 border-blue-200",
-    driver: "bg-gray-100 text-gray-600 border-gray-200",
-    manager:"bg-indigo-100 text-indigo-700 border-indigo-200",
-  }[r] || "");
+  const pages = Math.ceil(total / LIMIT);
 
   return (
     <AdminLayout>
       <div className="p-4 sm:p-6 lg:p-8">
+
         <AdminPageHeader
           icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>}
           label="Management" title="Users"
           subtitle="Manage all registered accounts"
           color="#3b82f6"
-          stats={[
-            { value: total, label: 'Total Users' },
-          ]}
+          stats={summary ? [
+            { value: summary.total,    label: 'Total'    },
+            { value: summary.drivers,  label: 'Drivers'  },
+            { value: summary.owners,   label: 'Owners'   },
+            { value: summary.managers, label: 'Managers' },
+          ] : []}
           right={
-            <button onClick={exportCSV} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90" style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
+            <button onClick={exportCSV} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
+              style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)' }}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               Export CSV
             </button>
           }
         />
 
-        <div className="flex gap-3 mb-6 flex-wrap">
-          <form onSubmit={e=>{e.preventDefault();load(1,role,search);}} className="flex gap-2 flex-1 min-w-56">
-            <input className="input flex-1 text-sm" placeholder="Search by name or email..."
-              value={search} onChange={e=>setSearch(e.target.value)} />
-            <button type="submit" className="px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>Search</button>
+        {/* Toolbar */}
+        <div className="space-y-3 mb-6">
+          {/* Search */}
+          <form onSubmit={e=>{e.preventDefault();load(1,role,search);}} className="flex gap-2">
+            <div className="relative flex-1">
+              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input type="text" placeholder="Search by name or email…"
+                value={search} onChange={e=>setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-gray-800 placeholder-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"/>
+              {search && (
+                <button type="button" onClick={()=>{setSearch('');load(1,role,'');}}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              )}
+            </div>
+            <button type="submit" className="flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-all"
+              style={{ background:'linear-gradient(135deg,#3b82f6,#2563eb)' }}>
+              Search
+            </button>
           </form>
-          <div className="flex gap-1.5 flex-wrap">
+
+          {/* Role filter — segmented */}
+          <div className="flex gap-1 p-1.5 bg-gray-100 rounded-full">
             {ROLES.map(r => (
-              <button key={r} onClick={() => { setRole(r); load(1,r,search); }}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${role===r ? "bg-indigo-50 border-indigo-200 text-indigo-700" : "bg-white border-gray-200 text-gray-500 hover:border-indigo-200"}`}>
-                {r ? r.charAt(0).toUpperCase()+r.slice(1) : "All"}
+              <button key={r.key} onClick={() => { setRole(r.key); load(1,r.key,search); }}
+                className={`flex-1 py-1.5 rounded-full text-xs font-semibold transition-all text-center ${
+                  role===r.key ? 'text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                style={role===r.key ? { background:'linear-gradient(135deg,#3b82f6,#2563eb)' } : {}}>
+                {r.label}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Content */}
         <div className="admin-card rounded-2xl overflow-hidden">
+
           {/* Mobile cards */}
           {!loading && users.length > 0 && (
-            <div className="md:hidden divide-y divide-gray-50">
-              {users.map(u => (
-                <div key={u.id} onClick={() => setDrawer(u)} className="p-4 flex items-center gap-3 cursor-pointer hover:bg-indigo-50/30 transition-colors">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>{u.name.charAt(0)}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{u.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{u.email}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`capitalize text-[10px] font-semibold px-2 py-0.5 rounded-full border ${roleBadge(u.role)}`}>{u.role}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${u.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>{u.is_active ? "Active" : "Inactive"}</span>
+            <div className="md:hidden p-3 space-y-2.5">
+              {users.map(u => {
+                const rs = ROLE_STYLE[u.role] || ROLE_STYLE.driver;
+                return (
+                  <div key={u.id} onClick={() => setDrawer(u)}
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all">
+                    {/* Avatar */}
+                    <div className="relative flex-shrink-0">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-sm font-extrabold"
+                        style={{ background:'linear-gradient(135deg,#3b82f6,#2563eb)', boxShadow:'0 4px 10px rgba(59,130,246,0.35)' }}>
+                        {u.name.charAt(0)}
+                      </div>
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${u.is_active ? 'bg-green-500' : 'bg-gray-300'}`}/>
                     </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{u.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="capitalize text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: rs.bg, color: rs.color, border:`1px solid ${rs.border}` }}>
+                          {u.role}
+                        </span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${u.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                          {u.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Action */}
+                    {u.role !== 'admin' && (
+                      <button onClick={e=>{e.stopPropagation();handleToggle(u.id,u.is_active,u.name);}} disabled={toggling===u.id}
+                        className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-xl transition-all disabled:opacity-40 hover:scale-105"
+                        style={u.is_active
+                          ? { background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)', color:'#ef4444', backdropFilter:'blur(8px)' }
+                          : { background:'linear-gradient(135deg,#22c55e,#16a34a)', color:'#fff' }}>
+                        {toggling===u.id ? '…' : u.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
                   </div>
-                  {u.role !== "admin" && (
-                    <button onClick={e=>{e.stopPropagation();handleToggle(u.id,u.is_active,u.name);}} disabled={toggling===u.id}
-                      className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all disabled:opacity-40 ${u.is_active ? "bg-red-50 border-red-200 text-red-600" : "bg-emerald-50 border-emerald-200 text-emerald-600"}`}>
-                      {toggling===u.id ? "..." : u.is_active ? "Deactivate" : "Activate"}
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
+
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full" style={{ minWidth:'640px' }}>
               <thead>
-                <tr className="border-b border-gray-100">
+                <tr>
                   {["User","Email","Role","Joined","Status","Action"].map(h => (
-                    <th key={h} className="px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-indigo-200 whitespace-nowrap" style={{ background:'linear-gradient(135deg,#1e1b4b,#312e81)' }}>{h}</th>
+                    <th key={h} className="px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest whitespace-nowrap"
+                      style={{ color:'#3b82f6', background:'#eff6ff', borderBottom:'2px solid #bfdbfe' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {loading ? Array(6).fill(0).map((_,i) => (
-                  <tr key={i}><td colSpan={6} className="px-4 py-3"><div className="h-8 rounded-lg animate-pulse bg-gray-50"/></td></tr>
+                  <tr key={i}><td colSpan={6} className="px-4 py-3"><div className="h-10 rounded-xl animate-pulse bg-gray-50"/></td></tr>
                 )) : users.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-14 text-gray-400 text-sm">No users found.</td></tr>
-                ) : users.map(u => (
-                  <tr key={u.id} onClick={() => setDrawer(u)}
-                    className="border-b border-gray-50 last:border-0 transition-colors cursor-pointer hover:bg-indigo-50/30 relative"
-                    style={{ borderLeft: `3px solid ${u.role==='admin'?'#f59e0b':u.role==='owner'?'#6366f1':u.role==='manager'?'#8b5cf6':'#22c55e'}` }}>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>{u.name.charAt(0)}</div>
-                        <span className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{u.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-sm text-gray-500 truncate max-w-[160px]">{u.email}</td>
-                    <td className="px-4 py-3.5"><span className={`capitalize text-xs font-semibold px-2.5 py-0.5 rounded-full border ${roleBadge(u.role)}`}>{u.role}</span></td>
-                    <td className="px-4 py-3.5 text-xs text-gray-400">{formatDate(u.created_at)}</td>
-                    <td className="px-4 py-3.5"><span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${u.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>{u.is_active ? "Active" : "Inactive"}</span></td>
-                    <td className="px-4 py-3.5" onClick={e=>e.stopPropagation()}>
-                      {u.role !== "admin" && (
-                        <button onClick={() => handleToggle(u.id, u.is_active, u.name)} disabled={toggling===u.id}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all disabled:opacity-40 hover:opacity-90"
-                          style={{ background: u.is_active ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#22c55e,#16a34a)' }}>
-                          {toggling===u.id ? "..." : u.is_active ? "Deactivate" : "Activate"}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                  <tr><td colSpan={6} className="text-center py-16 text-gray-400 text-sm">No users found.</td></tr>
+                ) : users.map(u => {
+                  const rs = ROLE_STYLE[u.role] || ROLE_STYLE.driver;
+                  return (
+                    <tr key={u.id} onClick={() => setDrawer(u)}
+                      className="border-b border-gray-50 last:border-0 transition-colors cursor-pointer hover:bg-blue-50/30">
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold"
+                              style={{ background:'linear-gradient(135deg,#3b82f6,#2563eb)' }}>{u.name.charAt(0)}</div>
+                            <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${u.is_active ? 'bg-green-500' : 'bg-gray-300'}`}/>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-800 truncate max-w-[120px]">{u.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-gray-500 truncate max-w-[160px]">{u.email}</td>
+                      <td className="px-4 py-3.5">
+                        <span className="capitalize text-xs font-bold px-2.5 py-1 rounded-full"
+                          style={{ background: rs.bg, color: rs.color, border:`1px solid ${rs.border}` }}>{u.role}</span>
+                      </td>
+                      <td className="px-4 py-3.5 text-xs text-gray-400 whitespace-nowrap">{formatDate(u.created_at)}</td>
+                      <td className="px-4 py-3.5">
+                        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${u.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${u.is_active ? 'bg-green-500' : 'bg-red-400'}`}/>
+                          {u.is_active ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5" onClick={e=>e.stopPropagation()}>
+                        {u.role !== "admin" && (
+                          <button onClick={() => handleToggle(u.id, u.is_active, u.name)} disabled={toggling===u.id}
+                            className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 hover:scale-105 active:scale-95"
+                            style={u.is_active
+                              ? { background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)', color:'#ef4444', backdropFilter:'blur(8px)' }
+                              : { background:'linear-gradient(135deg,#22c55e,#16a34a)', color:'#fff', boxShadow:'0 2px 8px rgba(34,197,94,0.4)' }}>
+                            {toggling===u.id ? "…" : u.is_active ? "Deactivate" : "Activate"}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
+          {/* Footer count */}
+          {!loading && users.length > 0 && (
+            <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+              <p className="text-xs text-gray-400">Showing {(page-1)*LIMIT+1}–{Math.min(page*LIMIT,total)} of {total} users</p>
+            </div>
+          )}
         </div>
 
-        {total > LIMIT && (
-          <div className="flex items-center justify-center gap-2 mt-6">
-            <button onClick={()=>load(page-1)} disabled={page===1} className="glass glass-hover px-4 py-2 rounded-xl text-sm text-gray-500 disabled:opacity-30">Prev</button>
-            <span className="text-sm text-gray-400">Page {page} of {Math.ceil(total/LIMIT)}</span>
-            <button onClick={()=>load(page+1)} disabled={page>=Math.ceil(total/LIMIT)} className="glass glass-hover px-4 py-2 rounded-xl text-sm text-gray-500 disabled:opacity-30">Next</button>
+        {/* Pagination */}
+        {pages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-5">
+            <button onClick={()=>load(page-1)} disabled={page===1}
+              className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 transition-all">
+              ← Prev
+            </button>
+            <span className="px-4 py-2 text-sm font-medium text-gray-500">
+              {page} / {pages}
+            </span>
+            <button onClick={()=>load(page+1)} disabled={page>=pages}
+              className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 transition-all">
+              Next →
+            </button>
           </div>
         )}
       </div>

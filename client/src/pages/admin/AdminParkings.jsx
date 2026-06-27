@@ -11,12 +11,12 @@ import toast from "react-hot-toast";
 const STATUSES = ["","pending","approved","rejected","inactive"];
 const LIMIT = 12;
 
-const statusBadge = (s) => ({
-  pending:  "bg-amber-50 text-amber-700 border-amber-200",
-  approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  rejected: "bg-red-50 text-red-700 border-red-200",
-  inactive: "bg-gray-100 text-gray-500 border-gray-200",
-}[s] || "");
+const STATUS_CONFIG = {
+  pending:  { bg:"#fffbeb", color:"#d97706", border:"#fde68a", dot:"#f59e0b" },
+  approved: { bg:"#f0fdf4", color:"#16a34a", border:"#bbf7d0", dot:"#22c55e" },
+  rejected: { bg:"#fef2f2", color:"#dc2626", border:"#fecaca", dot:"#ef4444" },
+  inactive: { bg:"#f9fafb", color:"#6b7280", border:"#e5e7eb", dot:"#9ca3af" },
+};
 
 export default function AdminParkings() {
   const [parkings,  setParkings]  = useState([]);
@@ -76,68 +76,140 @@ export default function AdminParkings() {
           }
         />
 
-        <div className="flex gap-1.5 mb-6 flex-wrap">
+        {/* Filter tabs */}
+        <div className="flex gap-1 p-1.5 bg-gray-100 rounded-full mb-6">
           {STATUSES.map(s => (
             <button key={s} onClick={() => handleFilter(s)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${filter===s ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-gray-500 border-gray-200 hover:border-indigo-200"}`}>
-              {s ? s.charAt(0).toUpperCase()+s.slice(1) : "All Statuses"}
+              className={`flex-1 py-2 rounded-full text-xs font-semibold transition-all text-center ${filter===s ? 'text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              style={filter===s ? { background:'linear-gradient(135deg,#6366f1,#2563eb)' } : {}}>
+              {s ? s.charAt(0).toUpperCase()+s.slice(1) : "All"}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {Array(6).fill(0).map((_,i) => <div key={i} className="h-44 admin-card rounded-2xl animate-pulse"/>)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array(6).fill(0).map((_,i) => <div key={i} className="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse"/>)}
           </div>
         ) : parkings.length === 0 ? (
-          <div className="admin-card rounded-2xl flex flex-col items-center justify-center py-20 text-gray-400">
-            <p className="text-sm">No parking locations found</p>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center py-20 gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center">
+              <svg className="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5"/></svg>
+            </div>
+            <p className="text-sm font-semibold text-gray-500">No parking locations found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {parkings.map(p => (
-              <div key={p.id} className="admin-card rounded-2xl overflow-hidden cursor-pointer hover:shadow-md transition-all" onClick={() => setDetail(p)}>
-                <div className="p-5">
-                  <div className="flex items-start mb-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="text-base font-bold text-gray-900 truncate">{p.name}</h3>
-                        <span className={`capitalize text-xs font-semibold px-2.5 py-0.5 rounded-full border ${statusBadge(p.status)}`}>{p.status}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {parkings.map(p => {
+              const sc = STATUS_CONFIG[p.status] || STATUS_CONFIG.inactive;
+              const occupancy = p.total_slots > 0 ? Math.round(((p.total_slots - p.available_slots) / p.total_slots) * 100) : 0;
+              const barColor = occupancy >= 90 ? '#ef4444' : occupancy >= 60 ? '#f59e0b' : '#22c55e';
+              return (
+                <div key={p.id}
+                  className="relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1"
+                  style={{
+                    background:'rgba(255,255,255,0.85)',
+                    backdropFilter:'blur(20px)',
+                    WebkitBackdropFilter:'blur(20px)',
+                    border:`1px solid ${sc.dot}30`,
+                    boxShadow:`0 4px 20px ${sc.dot}20, 0 0 0 1px ${sc.dot}10`,
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow=`0 12px 36px ${sc.dot}35, 0 0 0 1px ${sc.dot}20`}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow=`0 4px 20px ${sc.dot}20, 0 0 0 1px ${sc.dot}10`}
+                  onClick={() => setDetail(p)}>
+
+                  {/* Glow background */}
+                  <div className="absolute inset-0 pointer-events-none"
+                    style={{ background:`radial-gradient(ellipse at top right, ${sc.dot}12, transparent 60%)` }}/>
+
+                  <div className="relative p-5">
+                    {/* Top row: icon + status + action */}
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      {/* Parking icon */}
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl font-black flex-shrink-0"
+                        style={{ background:`linear-gradient(135deg,${sc.dot},${sc.color})`, boxShadow:`0 6px 16px ${sc.dot}50` }}>
+                        P
                       </div>
-                      <p className="text-xs text-gray-400 truncate">{p.address}</p>
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <h3 className="text-sm font-extrabold text-gray-900 truncate leading-tight">{p.name}</h3>
+                        <p className="text-xs text-gray-400 truncate mt-0.5">{p.address}</p>
+                      </div>
+                      <span className="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full capitalize"
+                        style={{ background:`${sc.dot}15`, color: sc.color, border:`1px solid ${sc.dot}25` }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }}/>
+                        {p.status}
+                      </span>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {[
-                      { label:"Owner", value: p.owner?.name||"--" },
-                      { label:"Slots", value: `${p.available_slots}/${p.total_slots}` },
-                      { label:"Rate",  value: `${formatCurrency(p.hourly_rate)}/hr` },
-                    ].map(d => (
-                      <div key={d.label} className="rounded-xl px-3 py-2 bg-gray-50 border border-gray-100">
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{d.label}</p>
-                        <p className="text-sm font-semibold text-gray-700 truncate">{d.value}</p>
+
+                    {/* Stats pills */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {[
+                        { label:'Owner', value: p.owner?.name||'—' },
+                        { label:'Rate',  value: `${formatCurrency(p.hourly_rate)}/hr` },
+                        { label:'Slots', value: `${p.available_slots}/${p.total_slots} free` },
+                      ].map(d => (
+                        <div key={d.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs"
+                          style={{ background:'rgba(0,0,0,0.04)', border:'1px solid rgba(0,0,0,0.06)' }}>
+                          <span className="text-gray-400 font-medium">{d.label}:</span>
+                          <span className="font-bold text-gray-700">{d.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Occupancy */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Occupancy</span>
+                        <span className="text-sm font-extrabold" style={{ color: barColor }}>{occupancy}%</span>
                       </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between" onClick={e=>e.stopPropagation()}>
-                    <span className="text-[10px] text-gray-400">Added {formatDate(p.created_at)}</span>
-                    <div className="flex gap-1.5">
-                      {p.status !== "approved" && <button onClick={() => handleStatus(p.id,"approved")} disabled={actioning===p.id} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40">Approve</button>}
-                      {p.status !== "rejected" && <button onClick={() => handleStatus(p.id,"rejected")} disabled={actioning===p.id} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 disabled:opacity-40">Reject</button>}
-                      {p.status === "approved" && <button onClick={() => handleStatus(p.id,"inactive")} disabled={actioning===p.id} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 disabled:opacity-40">Deactivate</button>}
+                      <div className="h-2 rounded-full overflow-hidden" style={{ background:'rgba(0,0,0,0.06)' }}>
+                        <div className="h-full rounded-full transition-all duration-700"
+                          style={{ width:`${occupancy}%`, background:`linear-gradient(90deg,${barColor}aa,${barColor})`, boxShadow:`0 0 8px ${barColor}60` }}/>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between gap-2" onClick={e=>e.stopPropagation()}>
+                      <span className="text-[10px] text-gray-300">{formatDate(p.created_at)}</span>
+                      <div className="flex gap-1.5">
+                        {p.status !== "approved" && (
+                          <button onClick={() => handleStatus(p.id,"approved")} disabled={actioning===p.id}
+                            className="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white disabled:opacity-40 hover:brightness-110 hover:scale-105 active:scale-95 transition-all"
+                            style={{ background:'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow:'0 2px 8px rgba(34,197,94,0.4)' }}>
+                            {actioning===p.id?'…':'Approve'}
+                          </button>
+                        )}
+                        {p.status !== "rejected" && (
+                          <button onClick={() => handleStatus(p.id,"rejected")} disabled={actioning===p.id}
+                            className="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white disabled:opacity-40 hover:brightness-110 hover:scale-105 active:scale-95 transition-all"
+                            style={{ background:'linear-gradient(135deg,#ef4444,#dc2626)', boxShadow:'0 2px 8px rgba(239,68,68,0.4)' }}>
+                            {actioning===p.id?'…':'Reject'}
+                          </button>
+                        )}
+                        {p.status === "approved" && (
+                          <button onClick={() => handleStatus(p.id,"inactive")} disabled={actioning===p.id}
+                            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-all">
+                            {actioning===p.id?'…':'Deactivate'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {total > LIMIT && (
-          <div className="flex items-center justify-center gap-2 mt-6">
-            <button onClick={()=>load(page-1)} disabled={page===1} className="glass glass-hover px-4 py-2 rounded-xl text-sm text-gray-500 disabled:opacity-30">Prev</button>
-            <span className="text-sm text-gray-400">Page {page} of {Math.ceil(total/LIMIT)}</span>
-            <button onClick={()=>load(page+1)} disabled={page>=Math.ceil(total/LIMIT)} className="glass glass-hover px-4 py-2 rounded-xl text-sm text-gray-500 disabled:opacity-30">Next</button>
+          <div className="flex items-center justify-between mt-6">
+            <p className="text-xs text-gray-400">Page {page} of {Math.ceil(total/LIMIT)}</p>
+            <div className="flex gap-2">
+              <button onClick={()=>load(page-1)} disabled={page===1}
+                className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-500 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 transition-all">← Prev</button>
+              <button onClick={()=>load(page+1)} disabled={page>=Math.ceil(total/LIMIT)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-500 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 transition-all">Next →</button>
+            </div>
           </div>
         )}
       </div>

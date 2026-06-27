@@ -120,6 +120,64 @@ function usePendingCount(userId) {
   return count;
 }
 
+/* ── Pending approval screen ────────────────────────────── */
+function PendingApproval({ user, logout }) {
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ background:'linear-gradient(135deg,#0f0c29 0%,#1e1b4b 45%,#3730a3 100%)' }}>
+      {/* Decorative */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/3 left-1/4 w-80 h-80 rounded-full opacity-10"
+          style={{ background:'radial-gradient(circle,#818cf8,transparent)', filter:'blur(80px)' }}/>
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'28px 28px' }}/>
+      </div>
+
+      <div className="relative w-full max-w-md text-center">
+        {/* Icon */}
+        <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center"
+          style={{ background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.15)' }}>
+          <svg className="w-10 h-10 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+
+        <h1 className="text-2xl font-extrabold text-white mb-2">Awaiting Admin Approval</h1>
+        <p className="text-indigo-200/70 text-sm leading-relaxed mb-8">
+          Hi <span className="text-white font-semibold">{user?.name}</span>, your parking owner account has been created successfully.
+          Our admin team will review and activate your account shortly.
+        </p>
+
+        {/* Status card */}
+        <div className="rounded-2xl p-5 mb-6 text-left space-y-3"
+          style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.12)' }}>
+          {[
+            { icon:'✓', label:'Account created',         color:'text-green-400',  done: true  },
+            { icon:'⏳', label:'Admin review in progress', color:'text-amber-400',  done: false },
+            { icon:'○', label:'Account activation',       color:'text-white/30',   done: false },
+            { icon:'○', label:'Start managing parkings',  color:'text-white/30',   done: false },
+          ].map((s,i) => (
+            <div key={i} className="flex items-center gap-3">
+              <span className={`text-sm font-bold flex-shrink-0 ${s.color}`}>{s.icon}</span>
+              <span className={`text-sm ${s.done ? 'text-white' : s.color}`}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-indigo-300/60 text-xs mb-6">
+          You'll be able to access your dashboard once approved. This usually takes less than 24 hours.
+        </p>
+
+        <button onClick={async () => { await logout(); navigate('/'); }}
+          className="w-full py-3 rounded-xl text-sm font-semibold text-white/60 border border-white/15 hover:bg-white/10 transition-all">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function OwnerLayout({
   children,
   title,
@@ -128,7 +186,7 @@ export default function OwnerLayout({
   showTabs = true,
   back,
 }) {
-  const { user }  = useAuth();
+  const { user, logout }  = useAuth();
   const [stats,   setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -136,7 +194,7 @@ export default function OwnerLayout({
   const pendingCount = usePendingCount(user?.id);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !user.is_active) return;
     const load = async () => {
       const today    = new Date(); today.setHours(0,0,0,0);
       const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
@@ -193,6 +251,11 @@ export default function OwnerLayout({
       label: "today's revenue",
     },
   ];
+
+  // Show pending approval screen for inactive owners
+  if (user && !user.is_active) {
+    return <PendingApproval user={user} logout={logout} />;
+  }
 
   return (
     <div className="min-h-screen pb-20 lg:pb-0" style={{ background: '#f8fafc' }}>

@@ -113,12 +113,60 @@ export default function AdminReservations() {
         </div>
 
         <div className="admin-card rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
+
+          {/* Mobile cards */}
+          {!loading && reservations.length > 0 && (
+            <div className="md:hidden p-3 space-y-2.5">
+              {reservations.map(r => (
+                <div key={`m-${r.id}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-2.5">
+                  {/* Row 1: ID + status + amount */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg">#{String(r.id).padStart(4,"0")}</span>
+                      <span className="flex items-center gap-1 text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full"
+                        style={{ background:`${DOT[r.status]||'#9ca3af'}15`, color: DOT[r.status]||'#9ca3af' }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: DOT[r.status]||'#9ca3af' }}/>
+                        {r.status}
+                      </span>
+                    </div>
+                    <p className="text-sm font-bold text-gray-900">{formatCurrency(r.total_amount)}</p>
+                  </div>
+                  {/* Row 2: driver + vehicle */}
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                      style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>{(r.driver?.name||"U").charAt(0)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{r.driver?.name||"—"}</p>
+                      <p className="text-xs text-gray-400 truncate">{r.parking?.name||"—"}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg border border-gray-200">{r.vehicle_number}</span>
+                      {r.vehicle_type && <p className="text-[10px] text-gray-400 capitalize mt-0.5">{r.vehicle_type}</p>}
+                    </div>
+                  </div>
+                  {/* Row 3: period */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gray-50 rounded-xl px-3 py-2">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide">Check-in</p>
+                      <p className="text-xs font-semibold text-gray-700">{formatDateTime(r.start_time)}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl px-3 py-2">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide">Check-out</p>
+                      <p className="text-xs font-semibold text-gray-700">{formatDateTime(r.end_time)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full" style={{ minWidth:'820px' }}>
               <thead>
                 <tr className="border-b border-gray-100">
                   {["ID","Driver","Location","Vehicle","Period","Amount","Status"].map(h => (
-                    <th key={h} className="px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest text-indigo-200 whitespace-nowrap" style={{ background:'linear-gradient(135deg,#1e1b4b,#312e81)' }}>{h}</th>
+                    <th key={h} className="px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color:'#6366f1', background:'#f5f7ff', borderBottom:'2px solid #e0e7ff' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -128,11 +176,8 @@ export default function AdminReservations() {
                 )) : reservations.length === 0 ? (
                   <tr><td colSpan={7} className="text-center py-16 text-gray-400 text-sm">No reservations found.</td></tr>
                 ) : reservations.map(r => (
-                  <tr key={r.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors"
-                    style={{ borderLeft:`3px solid ${r.status==='active'?'#22c55e':r.status==='confirmed'?'#3b82f6':r.status==='pending'?'#f59e0b':r.status==='cancelled'?'#ef4444':'#9ca3af'}` }}>
-                    <td className="px-4 py-3.5">
-                      <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg">#{String(r.id).padStart(4,"0")}</span>
-                    </td>
+                  <tr key={r.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                    <td className="px-4 py-3.5"><span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg">#{String(r.id).padStart(4,"0")}</span></td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background:"linear-gradient(135deg,#6366f1,#2563eb)" }}>{(r.driver?.name||"U").charAt(0)}</div>
@@ -142,10 +187,7 @@ export default function AdminReservations() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5">
-                      <p className="text-sm text-gray-600 truncate max-w-[140px]">{r.parking?.name||"--"}</p>
-                    </td>
-                    {/* Vehicle + Type merged */}
+                    <td className="px-4 py-3.5"><p className="text-sm text-gray-600 truncate max-w-[140px]">{r.parking?.name||"--"}</p></td>
                     <td className="px-4 py-3.5">
                       <span className="text-xs font-mono text-gray-600 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-lg">{r.vehicle_number}</span>
                       <p className="text-[11px] text-gray-400 capitalize mt-0.5">{r.vehicle_type||''}</p>
@@ -154,9 +196,7 @@ export default function AdminReservations() {
                       <p className="text-xs text-gray-500">{formatDateTime(r.start_time)}</p>
                       <p className="text-[10px] text-gray-300">→ {formatDateTime(r.end_time)}</p>
                     </td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-sm font-bold text-gray-800">{formatCurrency(r.total_amount)}</span>
-                    </td>
+                    <td className="px-4 py-3.5"><span className="text-sm font-bold text-gray-800">{formatCurrency(r.total_amount)}</span></td>
                     <td className="px-4 py-3.5">
                       <span className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background:DOT[r.status]||"#9ca3af" }}/>
@@ -171,11 +211,13 @@ export default function AdminReservations() {
         </div>
 
         {total > LIMIT && (
-          <div className="flex items-center justify-between px-2 mt-6">
-            <p className="text-xs text-gray-400">Showing {(page-1)*LIMIT+1}-{Math.min(page*LIMIT,total)} of {total}</p>
+          <div className="flex items-center justify-between mt-5">
+            <p className="text-xs text-gray-400">Showing {(page-1)*LIMIT+1}–{Math.min(page*LIMIT,total)} of {total}</p>
             <div className="flex gap-2">
-              <button onClick={()=>load(page-1)} disabled={page===1} className="glass glass-hover px-4 py-2 rounded-xl text-sm text-gray-500 disabled:opacity-30">Prev</button>
-              <button onClick={()=>load(page+1)} disabled={page>=Math.ceil(total/LIMIT)} className="glass glass-hover px-4 py-2 rounded-xl text-sm text-gray-500 disabled:opacity-30">Next</button>
+              <button onClick={()=>load(page-1)} disabled={page===1}
+                className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-500 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 transition-all">← Prev</button>
+              <button onClick={()=>load(page+1)} disabled={page>=Math.ceil(total/LIMIT)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-500 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 transition-all">Next →</button>
             </div>
           </div>
         )}

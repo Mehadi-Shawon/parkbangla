@@ -71,8 +71,12 @@ export function AuthProvider({ children }) {
       .eq('auth_user_id', data.user.id)
       .single();
 
-    // If profile is null (e.g. email confirmation pending), construct a minimal object
-    // so the caller can still navigate. The full profile will load on next session restore.
+    // Owners require admin approval — set is_active = false until approved
+    if (profile && (role || 'driver') === 'owner') {
+      await supabase.from('users').update({ is_active: false }).eq('id', profile.id);
+      profile.is_active = false;
+    }
+
     const userData = profile || { name, email, phone, role: role || 'driver' };
     setUser(userData);
     return userData;

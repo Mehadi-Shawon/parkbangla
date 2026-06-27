@@ -35,6 +35,7 @@ import AdminManagers      from './pages/admin/AdminManagers';
 import AdminAnalytics     from './pages/admin/AdminAnalytics';
 import AdminMap           from './pages/admin/AdminMap';
 import AdminPending       from './pages/admin/AdminPending';
+import AdminParkOwners    from './pages/admin/AdminParkOwners';
 import AdminSettings      from './pages/admin/AdminSettings';
 
 // Manager
@@ -179,6 +180,11 @@ export default function App() {
           <Route path="/admin/pending" element={
             <ProtectedRoute roles={['admin']}>
               <AdminPending />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/park-owners" element={
+            <ProtectedRoute roles={['admin']}>
+              <AdminParkOwners />
             </ProtectedRoute>
           } />
           <Route path="/admin/settings" element={

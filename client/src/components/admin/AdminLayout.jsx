@@ -25,6 +25,7 @@ const Icons = {
   Map:          () => <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>,
   Pending:      () => <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>,
   Settings:     () => <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
+  Owners:       () => <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>,
   Logout:       () => <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>,
   Menu:         () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/></svg>,
 };
@@ -32,25 +33,26 @@ const Icons = {
 const NAV = [
   { to: '/admin',              icon: Icons.Dashboard,    label: 'Dashboard',    exact: true },
   { to: '/admin/users',        icon: Icons.Users,        label: 'Users'         },
-  { to: '/admin/parking',      icon: Icons.Parking,      label: 'Parking'       },
   { to: '/admin/reservations', icon: Icons.Reservations, label: 'Reservations'  },
+  { to: '/admin/parking',      icon: Icons.Parking,      label: 'Parking'       },
   { to: '/admin/managers',     icon: Icons.Managers,     label: 'Managers'      },
+  { to: '/admin/park-owners',  icon: Icons.Owners,       label: 'Park Owners'   },
   { to: '/admin/analytics',    icon: Icons.Analytics,    label: 'Analytics'     },
   { to: '/admin/map',          icon: Icons.Map,          label: 'Map View'      },
-  { to: '/admin/pending',      icon: Icons.Pending,      label: 'Pending Inbox' },
   { to: '/admin/activity',     icon: Icons.Activity,     label: 'Activity Log'  },
   { to: '/admin/settings',     icon: Icons.Settings,     label: 'Settings'      },
 ];
 
 function useLiveBadges() {
-  const [badges, setBadges] = useState({ pending: 0, active: 0 });
+  const [badges, setBadges] = useState({ pending: 0, active: 0, owners: 0 });
   useEffect(() => {
     const load = async () => {
-      const [{ count: pending }, { count: active }] = await Promise.all([
+      const [{ count: pending }, { count: active }, { count: owners }] = await Promise.all([
         supabase.from('parking_locations').select('id', { count:'exact', head:true }).eq('status','pending'),
         supabase.from('reservations').select('id', { count:'exact', head:true }).eq('status','active'),
+        supabase.from('users').select('id', { count:'exact', head:true }).eq('role','owner').eq('is_active',false),
       ]);
-      setBadges({ pending: pending||0, active: active||0 });
+      setBadges({ pending: pending||0, active: active||0, owners: owners||0 });
     };
     load();
     const interval = setInterval(load, 30000);
@@ -82,49 +84,71 @@ function Sidebar({ onClose }) {
        : 'text-slate-500 hover:text-slate-800 hover:bg-indigo-50'}`;
 
   return (
-    <aside className="flex flex-col h-full w-64" style={{
-      background: 'linear-gradient(180deg,#fafbff 0%,#f0f4ff 50%,#f5f3ff 100%)',
-      borderRight: '2px solid #e8ecf8',
+    <aside className="flex flex-col h-full w-64 relative overflow-hidden" style={{
+      background: 'linear-gradient(160deg,#0a0818 0%,#0f0c29 30%,#1a1040 70%,#0f0c29 100%)',
+      borderRight: '1px solid rgba(99,102,241,0.15)',
     }}>
+      {/* Decorative glow */}
+      <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full pointer-events-none"
+        style={{ background:'radial-gradient(circle,rgba(99,102,241,0.15),transparent 70%)' }}/>
+      <div className="absolute bottom-40 -left-16 w-48 h-48 rounded-full pointer-events-none"
+        style={{ background:'radial-gradient(circle,rgba(139,92,246,0.08),transparent 70%)' }}/>
+
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 flex-shrink-0"
-        style={{ borderBottom: '1px solid #e8ecf8', background: 'linear-gradient(135deg,#eef2ff,#f5f3ff)' }}>
+      <div className="relative flex items-center gap-3 px-5 h-16 flex-shrink-0"
+        style={{ borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
         <Icons.Logo />
         <div>
-          <p className="font-extrabold text-base leading-tight" style={{ color: '#3730a3' }}>ParkBangla</p>
-          <p className="text-[10px] uppercase tracking-widest" style={{ color: '#8b8dc0' }}>Admin Console</p>
+          <p className="font-extrabold text-base leading-tight text-white tracking-tight">ParkBangla</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color:'rgba(165,180,252,0.5)' }}>Admin Console</p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-6 space-y-0.5 overflow-y-auto">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] px-3 mb-4" style={{ color: '#a5b4fc' }}>
-          Navigation
-        </p>
+      <nav className="relative flex-1 px-2.5 py-5 space-y-0.5 overflow-y-auto">
         {NAV.map(({ to, icon: NavIcon, label, exact }) => (
-          <NavLink key={to} to={to} end={exact} className={linkClass} onClick={onClose}>
+          <NavLink key={to} to={to} end={exact} onClick={onClose}
+            className={({ isActive }) =>
+              `relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
+               ${isActive
+                 ? 'text-white'
+                 : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`
+            }>
             {({ isActive }) => (
               <>
-                <span className={`p-1 rounded-lg flex-shrink-0 ${isActive ? 'bg-white/20' : 'bg-indigo-50'}`}
-                  style={{ color: isActive ? '#fff' : '#6366f1' }}>
+                {/* Active background */}
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl"
+                    style={{ background:'linear-gradient(135deg,rgba(99,102,241,0.4),rgba(79,70,229,0.25))', border:'1px solid rgba(99,102,241,0.3)', boxShadow:'0 0 20px rgba(99,102,241,0.15)' }}/>
+                )}
+                {/* Active left bar */}
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
+                    style={{ background:'linear-gradient(180deg,#818cf8,#6366f1)' }}/>
+                )}
+
+                <span className="relative z-10 flex-shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5"
+                  style={{ color: isActive ? '#a5b4fc' : 'rgba(255,255,255,0.35)' }}>
                   <NavIcon />
                 </span>
-                <span className="flex-1">{label}</span>
-                {/* Live badges */}
-                {to === '/admin/pending' && badges.pending > 0 && (
-                  <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold px-1.5"
-                    style={{ background: isActive ? 'rgba(255,255,255,0.25)' : '#ef4444', color: '#fff' }}>
+                <span className="relative z-10 flex-1 font-semibold">{label}</span>
+
+                {/* Badges */}
+                {to === '/admin/parking' && badges.pending > 0 && (
+                  <span className="relative z-10 ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold px-1.5 bg-red-500 text-white">
                     {badges.pending > 99 ? '99+' : badges.pending}
                   </span>
                 )}
                 {to === '/admin/reservations' && badges.active > 0 && (
-                  <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold px-1.5"
-                    style={{ background: isActive ? 'rgba(255,255,255,0.25)' : '#22c55e', color: '#fff' }}>
+                  <span className="relative z-10 ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold px-1.5 bg-green-500 text-white">
                     {badges.active > 99 ? '99+' : badges.active}
                   </span>
                 )}
-                {isActive && !(['/admin/pending','/admin/reservations'].includes(to) && (badges.pending>0||badges.active>0)) && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/70 flex-shrink-0" />
+                {to === '/admin/park-owners' && badges.owners > 0 && (
+                  <span className="relative z-10 ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[10px] font-bold px-1.5 text-white"
+                    style={{ background:'#f97316' }}>
+                    {badges.owners > 99 ? '99+' : badges.owners}
+                  </span>
                 )}
               </>
             )}
@@ -132,25 +156,25 @@ function Sidebar({ onClose }) {
         ))}
       </nav>
 
-      {/* User + logout */}
-      <div className="px-3 pb-4 pt-3 flex-shrink-0"
-        style={{ borderTop: '1px solid #e0e7ff', background: 'rgba(238,242,255,0.5)' }}>
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1"
-          style={{ background: 'white', border: '1px solid #e0e7ff' }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow: '0 2px 8px rgba(99,102,241,0.3)' }}>
+      {/* User card */}
+      <div className="relative px-3 pb-4 pt-3 flex-shrink-0"
+        style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-center gap-3 px-3 py-3 rounded-2xl mb-2"
+          style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            style={{ background:'linear-gradient(135deg,#6366f1,#2563eb)', boxShadow:'0 4px 12px rgba(99,102,241,0.4)' }}>
             {getInitials(user?.name || 'A')}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold truncate" style={{ color: '#3730a3' }}>{user?.name}</p>
-            <p className="text-[11px] truncate" style={{ color: '#8b8dc0' }}>{user?.email}</p>
+            <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+            <p className="text-[11px] truncate" style={{ color:'rgba(165,180,252,0.5)' }}>{user?.email}</p>
           </div>
         </div>
         <button onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all mt-1"
-          style={{ color: '#94a3b8' }}
-          onMouseEnter={e => { e.currentTarget.style.background='#fef2f2'; e.currentTarget.style.color='#ef4444'; }}
-          onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#94a3b8'; }}>
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+          style={{ color:'rgba(255,255,255,0.25)', border:'1px solid rgba(255,255,255,0.06)' }}
+          onMouseEnter={e => { e.currentTarget.style.background='rgba(239,68,68,0.12)'; e.currentTarget.style.color='#f87171'; e.currentTarget.style.borderColor='rgba(239,68,68,0.2)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(255,255,255,0.25)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'; }}>
           <Icons.Logout />
           Sign out
         </button>
@@ -470,29 +494,31 @@ function QuickStats() {
   return (
     <div className="hidden md:flex items-center gap-2 flex-shrink-0">
       <button onClick={() => navigate('/admin/parking')}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
         style={{
-          background: stats.pending > 0 ? '#fffbeb' : '#f8fafc',
-          border: `1px solid ${stats.pending > 0 ? '#fde68a' : '#e2e8f0'}`,
-          color: stats.pending > 0 ? '#b45309' : '#94a3b8',
+          background: stats.pending > 0 ? 'linear-gradient(135deg,#fef3c7,#fffbeb)' : '#f8fafc',
+          border: `1px solid ${stats.pending > 0 ? '#fbbf24' : '#e2e8f0'}`,
+          color: stats.pending > 0 ? '#d97706' : '#94a3b8',
+          boxShadow: stats.pending > 0 ? '0 2px 8px rgba(251,191,36,0.25)' : 'none',
         }}>
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        {stats.pending} pending
+        <span>{stats.pending} pending</span>
       </button>
 
       <button onClick={() => navigate('/admin/reservations')}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
         style={{
-          background: stats.active > 0 ? '#ecfdf5' : '#f8fafc',
-          border: `1px solid ${stats.active > 0 ? '#a7f3d0' : '#e2e8f0'}`,
+          background: stats.active > 0 ? 'linear-gradient(135deg,#d1fae5,#ecfdf5)' : '#f8fafc',
+          border: `1px solid ${stats.active > 0 ? '#34d399' : '#e2e8f0'}`,
           color: stats.active > 0 ? '#059669' : '#94a3b8',
+          boxShadow: stats.active > 0 ? '0 2px 8px rgba(52,211,153,0.25)' : 'none',
         }}>
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
         </svg>
-        {stats.active} active
+        <span>{stats.active} active</span>
       </button>
     </div>
   );
@@ -501,25 +527,29 @@ function QuickStats() {
 /* ── Top Bar ────────────────────────────────────────────── */
 function TopBar({ mobileMenuOpen }) {
   return (
-    <div className="sticky top-0 z-30 flex items-center gap-3 px-4 lg:px-6 h-14 flex-shrink-0"
+    <div className="sticky top-0 z-30 flex items-center gap-3 px-4 lg:px-6 h-16 flex-shrink-0"
       style={{
-        background: 'linear-gradient(to right, #fafbff, #ffffff)',
-        borderBottom: '1px solid #e8ecf8',
-        boxShadow: '0 2px 12px rgba(79,70,229,0.06)',
+        background: 'rgba(255,255,255,0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(99,102,241,0.1)',
+        boxShadow: '0 1px 24px rgba(99,102,241,0.06)',
       }}>
-      {/* Indigo accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px]"
-        style={{ background: 'linear-gradient(to right, #6366f1 0%, #a5b4fc 40%, transparent 100%)', opacity: 0.4 }} />
+
+      {/* Left accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px"
+        style={{ background: 'linear-gradient(to right, #6366f1 0%, #a5b4fc 30%, transparent 70%)' }}/>
 
       {/* Mobile hamburger */}
-      <button onClick={mobileMenuOpen} className="lg:hidden text-slate-500 hover:text-slate-900 flex-shrink-0">
+      <button onClick={mobileMenuOpen}
+        className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
         <Icons.Menu />
       </button>
 
       {/* Search */}
       <GlobalSearch />
 
-      {/* Right group — pushed to far right */}
+      {/* Right group */}
       <div className="ml-auto flex items-center gap-2 flex-shrink-0">
         <QuickStats />
         <NotificationBell />

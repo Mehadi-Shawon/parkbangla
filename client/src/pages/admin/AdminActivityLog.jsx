@@ -124,36 +124,28 @@ export default function AdminActivityLog() {
           label="Admin" title="Activity Log"
           subtitle={`${total} events recorded`}
           color="#10b981"
-          right={<div className="flex items-center gap-3">
-            {/* Live toggle */}
+          right={<div className="flex items-center gap-2">
             <button onClick={() => setAuto(a => !a)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                auto
-                  ? 'bg-green-50 border-green-200 text-green-700'
-                  : 'bg-gray-50 border-gray-200 text-gray-500'
-              }`}>
-              <span className={`w-2 h-2 rounded-full ${auto ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}/>
-              {auto ? 'Live' : 'Paused'}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                auto ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${auto ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}/>
+              <span className="hidden sm:inline">{auto ? 'Live' : 'Paused'}</span>
             </button>
-            {/* Refresh */}
             <button onClick={() => load(1, category)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 bg-white text-gray-600 hover:border-indigo-200 hover:text-indigo-600 transition-all">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-              </svg>
-              Refresh
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>}
         />
 
-        {/* Category filter */}
-        <div className="flex gap-1.5 mb-6 overflow-x-auto pb-1">
+        {/* Category filter — segmented */}
+        <div className="flex gap-1 p-1.5 bg-gray-100 rounded-full mb-6">
           {CATEGORIES.map(c => (
             <button key={c.key} onClick={() => handleCategory(c.key)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold border whitespace-nowrap transition-all flex-shrink-0
-                ${category === c.key
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                  : 'bg-white text-gray-500 border-gray-200 hover:border-indigo-200 hover:text-indigo-600'}`}>
+              className={`flex-1 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all text-center ${
+                category === c.key ? 'text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              style={category === c.key ? { background:'linear-gradient(135deg,#10b981,#059669)' } : {}}>
               {c.label}
             </button>
           ))}
@@ -179,9 +171,9 @@ export default function AdminActivityLog() {
               {Object.entries(grouped).map(([date, entries]) => (
                 <div key={date}>
                   {/* Date separator */}
-                  <div className="sticky top-0 z-10 flex items-center gap-3 px-6 py-2.5 bg-gray-50/90 backdrop-blur-sm border-y border-gray-100">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{date}</span>
-                    <span className="text-xs text-gray-300">{entries.length} event{entries.length !== 1 ? 's' : ''}</span>
+                  <div className="sticky top-0 z-10 flex items-center gap-3 px-4 sm:px-6 py-2.5 bg-gray-50/90 backdrop-blur-sm border-y border-gray-100">
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{date}</span>
+                    <span className="text-[11px] text-gray-300 bg-gray-100 px-2 py-0.5 rounded-full">{entries.length}</span>
                   </div>
 
                   {/* Events */}
@@ -189,7 +181,7 @@ export default function AdminActivityLog() {
                     {entries.map(entry => {
                       const meta = ACTION_META[entry.action] || { color:'#6b7280', bg:'#f9fafb' };
                       return (
-                        <div key={entry.id} className="flex gap-4 px-6 py-4 hover:bg-gray-50/60 transition-colors group">
+                        <div key={entry.id} className="flex gap-3 sm:gap-4 px-4 sm:px-6 py-3.5 hover:bg-gray-50/60 transition-colors group">
 
                           {/* Action icon */}
                           <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
